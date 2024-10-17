@@ -51,6 +51,7 @@
     &.lower {
       bottom: 0;
       transform: scaleY(-1);
+      color: red;
     }
   }
   .triangle {
