@@ -25,7 +25,7 @@
 
   <div class="dice-container">
     {#if !dice[0] && !dice[1]}
-      <span>Zieh die Würfel mit der Maus, um zu Würfeln</span>
+      <span>Zieh die Würfel mit der Maus, um zu würfeln</span>
     {/if}
     <Draggable
       on:dragend={throwDice}
