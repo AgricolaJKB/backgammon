@@ -1,12 +1,17 @@
 <script>
   export let color;
+  export let reversed = false;
 
   let w, h;
 </script>
 
 <div bind:clientWidth={w} bind:clientHeight={h} class="container">
   <svg>
-    <polygon points="0,0 {w},0 {w / 2},{h}" fill={color} />
+    {#if reversed}
+      <polygon points="0,0 {w},0 {w / 2},{h}" fill={color} />
+    {:else}
+      <polygon points="0,{h} {w},{h} {w / 2},0" fill={color} />
+    {/if}
   </svg>
 </div>
 

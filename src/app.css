@@ -40,10 +40,12 @@ h1 {
 }
 
 #app {
-  max-width: 1280px;
+  max-width: 1500px;
   margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  width: 100%;
+  height: 100%;
+  /* padding: 2rem; */
+  /* text-align: center; */
 }
 
 button {
@@ -58,7 +60,8 @@ button {
   transition: border-color 0.25s;
 }
 button:hover {
-  border-color: #646cff;
+  /* border-color: #646cff; */
+  border-color: #1f1f1f;
 }
 button:focus,
 button:focus-visible {
@@ -71,7 +74,8 @@ button:focus-visible {
     background-color: #ffffff;
   }
   a:hover {
-    color: #747bff;
+    /* color: #747bff; */
+    /* color:  */
   }
   button {
     background-color: #f9f9f9;

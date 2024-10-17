@@ -1,25 +1,25 @@
 <script>
   import Triangle from "./Triangle.svelte";
+  import Checker from "./Checker.svelte";
 
   export let startSettings = {};
 </script>
 
 <!-- 1 board, 2 sides, 12 triangles per side  -->
 <div class="board">
-  {#each ["upper", "lower"] as side}
-    <div class="side {side}">
+  {#each Array.from({ length: 2 }) as _, side}
+    <div class="side {side === 0 ? 'upper' : 'lower'}">
       {#each Array.from({ length: 12 }) as _, i}
         <!-- <div class="triangle" style="left: {i * (100 / 12)}%"> -->
         <div class="triangle" style="width: {100 / 12}%">
-          <Triangle color={i % 2 === 0 ? "darkgrey" : "grey"} />
-          <div class="checkerContainer">
-            {#if startSettings[i]}
-              {#each Array.from({ length: startSettings[i].checkers }) as _}
-                <div
-                  class="checker"
-                  style="background-color: {startSettings[i]
-                    .color}; border: 1px solid black"
-                />
+          <Triangle
+            color={i % 2 === 0 ? "darkgrey" : "grey"}
+            reversed={side === 0}
+          />
+          <div class="checkerContainer {side === 1 && 'reversed'}">
+            {#if startSettings[i + side * 12]}
+              {#each Array.from( { length: startSettings[i + side * 12].checkers } ) as _}
+                <Checker color={startSettings[i + side * 12].color} />
               {/each}
             {/if}
           </div>
@@ -34,6 +34,8 @@
     position: relative;
     width: 90vw;
     height: 90dvh;
+    max-width: 100%;
+    max-height: 100%;
     background-color: #c3c3c3;
   }
   .side {
@@ -43,15 +45,31 @@
     background-color: white;
     margin: 2rem;
     display: flex;
-    flex-direction: row-reverse;
 
     &.upper {
       top: 0;
+      flex-direction: row-reverse;
+
+      & > div {
+        &:nth-child(6) {
+          margin-left: 1.5rem;
+        }
+        &:nth-child(7) {
+          margin-right: 1.5rem;
+        }
+      }
     }
     &.lower {
       bottom: 0;
-      transform: scaleY(-1);
-      color: red;
+
+      & > div {
+        &:nth-child(6) {
+          margin-right: 1.5rem;
+        }
+        &:nth-child(7) {
+          margin-left: 1.5rem;
+        }
+      }
     }
   }
   .triangle {
@@ -69,12 +87,10 @@
     flex-direction: column;
     justify-content: start;
     align-items: center;
-  }
-  .checker {
-    width: 2rem;
-    height: 2rem;
-    border-radius: 50%;
-    margin: 0.5rem;
-    cursor: pointer;
+
+    &.reversed {
+      flex-direction: column-reverse;
+      justify-content: end;
+    }
   }
 </style>
