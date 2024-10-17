@@ -19,23 +19,24 @@
   }
 
   function onMouseMove(e) {
-    if (!moving) return;
+    if (moving) {
+      left += e.movementX;
+      top += e.movementY;
+    }
     if (
-      left + e.movementX > maxDrag[0] ||
-      left + e.movementX < -maxDrag[0] ||
-      top + e.movementY > maxDrag[1] ||
-      top + e.movementY < -maxDrag[1]
+      maxDrag &&
+      (left > maxDrag[0] ||
+        left < -maxDrag[0] ||
+        top > maxDrag[1] ||
+        top < -maxDrag[1])
     ) {
       onMouseUp();
-      return;
     }
-    left += e.movementX;
-    top += e.movementY;
   }
 
   function onMouseUp() {
     moving = false;
-    if (!left || !top) return;
+    // if ((!left || !top) && !force) return;
     dispatch("dragend");
     if (resetAfterDrag) {
       left = 0;

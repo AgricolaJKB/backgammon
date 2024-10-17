@@ -36,7 +36,7 @@
     height: 90dvh;
     max-width: 100%;
     max-height: 100%;
-    background-color: #c3c3c3;
+    background-color: darkgrey;
   }
   .side {
     position: absolute;
