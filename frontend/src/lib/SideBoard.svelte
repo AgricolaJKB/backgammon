@@ -1,46 +1,47 @@
 <script>
   import Dice from "./Dice.svelte";
   import Draggable from "./Draggable.svelte";
+  import { currentPlayer, currentRoll, rollDices } from "../store.js";
 
-  let currentPlayer = "white";
-  let dice = [null, null];
+  let dices = $currentRoll;
 
-  const throwDice = () => {
-    dice = [
-      Math.floor(Math.random() * 6) + 1,
-      Math.floor(Math.random() * 6) + 1,
-    ];
+  $: {
+    dices = $currentRoll;
+  }
+
+  const roll = async () => {
+    dices = await rollDices();
   };
 
   const endTurn = () => {
-    currentPlayer = currentPlayer === "white" ? "black" : "white";
-    dice = [null, null];
+    // currentPlayer = currentPlayer === "white" ? "black" : "white";
+    dices = [null, null];
   };
 </script>
 
 <div class="container">
-  <div class="info {currentPlayer}">
-    <p>{currentPlayer === "white" ? "Weiß" : "Schwarz"} ist am Zug</p>
+  <div class="info {$currentPlayer}">
+    <p>{$currentPlayer === "white" ? "Weiß" : "Schwarz"} ist am Zug</p>
   </div>
 
   <div class="dice-container">
-    {#if !dice[0] && !dice[1]}
+    {#if !dices[0] && !dices[1]}
       <span>Zieh die Würfel mit der Maus, um zu würfeln</span>
     {/if}
     <Draggable
-      on:dragend={throwDice}
+      on:dragend={roll}
       maxDrag={[150, 150]}
       resetAfterDrag
-      deactivated={dice[0]}
+      deactivated={dices[0]}
     >
       <div class="dices">
-        <Dice number={dice[0]} />
-        <Dice number={dice[1]} />
+        <Dice number={dices[0]} />
+        <Dice number={dices[1]} />
       </div>
     </Draggable>
   </div>
 
-  {#if dice[0] && dice[1]}
+  {#if dices[0] && dices[1]}
     <div class="actions">
       <button on:click={endTurn}>Zug beenden</button>
     </div>

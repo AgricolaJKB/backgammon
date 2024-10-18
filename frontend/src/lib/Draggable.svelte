@@ -6,6 +6,7 @@
   export let maxDrag = [Infinity, Infinity];
   export let resetAfterDrag = false;
   export let deactivated = false;
+  export let el;
 
   let left = 0;
   let top = 0;
@@ -36,16 +37,21 @@
 
   function onMouseUp() {
     moving = false;
-    // if ((!left || !top) && !force) return;
     dispatch("dragend");
     if (resetAfterDrag) {
       left = 0;
       top = 0;
     }
   }
+
+  export const reset = () => {
+    left = 0;
+    top = 0;
+  };
 </script>
 
 <div
+  bind:this={el}
   on:mousedown={onMouseDown}
   on:mouseup={onMouseUp}
   style="transform: translate({left}px, {top}px)"
@@ -65,5 +71,6 @@
     -webkit-user-select: none; /* Safari */
     -ms-user-select: none; /* IE 10 and IE 11 */
     user-select: none; /* Standard syntax */
+    z-index: 2000;
   }
 </style>

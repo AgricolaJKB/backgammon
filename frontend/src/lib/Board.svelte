@@ -1,8 +1,28 @@
 <script>
   import Triangle from "./Triangle.svelte";
   import Checker from "./Checker.svelte";
+  import { currentPlayer } from "../store.js";
+  import { onMount } from "svelte";
 
   export let startSettings = {};
+
+  let triangleCentroids;
+
+  onMount(() => {
+    const triangles = document.querySelectorAll(".triangle");
+    triangleCentroids = Array.from(triangles).map((triangle) => {
+      const { left, top, width, height } = triangle.getBoundingClientRect();
+      return {
+        x: left + width / 2,
+        y: top + height / 2,
+        triangle: triangle,
+      };
+    });
+  });
+
+  const cleanup = () => {
+    startSettings = {};
+  };
 </script>
 
 <!-- 1 board, 2 sides, 12 triangles per side  -->
@@ -10,8 +30,11 @@
   {#each Array.from({ length: 2 }) as _, side}
     <div class="side {side === 0 ? 'upper' : 'lower'}">
       {#each Array.from({ length: 12 }) as _, i}
-        <!-- <div class="triangle" style="left: {i * (100 / 12)}%"> -->
-        <div class="triangle" style="width: {100 / 12}%">
+        <div
+          class="triangle root-triangle"
+          style="width: {100 / 12}%"
+          data-position={i + side * 12}
+        >
           <Triangle
             color={i % 2 === 0 ? "darkgrey" : "grey"}
             reversed={side === 0}
@@ -19,7 +42,13 @@
           <div class="checkerContainer {side === 1 && 'reversed'}">
             {#if startSettings[i + side * 12]}
               {#each Array.from( { length: startSettings[i + side * 12].checkers } ) as _}
-                <Checker color={startSettings[i + side * 12].color} />
+                <Checker
+                  position={i + side * 12}
+                  color={startSettings[i + side * 12].color}
+                  draggable={startSettings[i + side * 12].color ===
+                    $currentPlayer}
+                  {triangleCentroids}
+                />
               {/each}
             {/if}
           </div>
@@ -27,9 +56,25 @@
       {/each}
     </div>
   {/each}
+  <!-- {#if triangleCentroids}
+    {#each triangleCentroids as { x, y, triangle }, i}
+      <div
+        class="marker"
+        style="position: absolute; top: {y}px; left: {x}px; color: white"
+      ></div>
+    {/each}
+  {/if} -->
 </div>
 
 <style lang="scss">
+  .marker {
+    position: fixed !important;
+    width: 1rem;
+    height: 1rem;
+    background-color: red;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+  }
   .board {
     position: relative;
     width: 90vw;
