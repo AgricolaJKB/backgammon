@@ -34,13 +34,13 @@ def read_root():
     return {"Hello": "World"}
 
 
-@app.get("/game/{id}")
+@app.get("/{id}")
 def read_game(id: str):
     conn = Connector(id)
     return conn.get()
 
 
-@app.get("/game/{id}/roll")
+@app.get("/{id}/roll")
 def roll(id: str):
     conn = Connector(id)
     player = conn.get_last_player() == "w" and "b" or "w"
@@ -57,7 +57,7 @@ class Move(BaseModel):
     end: int
 
 
-@app.post("/game/{id}/moves")
+@app.post("/{id}/moves")
 def add_moves(id: str, moves: List[Move]):
     conn = Connector(id)
     turn = conn.get_last_turn() + 1

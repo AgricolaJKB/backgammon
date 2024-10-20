@@ -6,6 +6,8 @@
   export let maxDrag = [Infinity, Infinity];
   export let resetAfterDrag = false;
   export let deactivated = false;
+  export let invertX = false;
+  export let invertY = false;
   export let el = null;
   export let id = null;
 
@@ -22,8 +24,8 @@
 
   function onMouseMove(e) {
     if (moving) {
-      left += e.movementX;
-      top += e.movementY;
+      left += (invertX ? -1 : 1) * e.movementX;
+      top += (invertY ? -1 : 1) * e.movementY;
     }
     if (
       maxDrag &&

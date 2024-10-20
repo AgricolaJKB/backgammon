@@ -96,6 +96,8 @@
                   draggable={startSettings[i + side * 12].color ===
                     $currentPlayer && $onTheMove}
                   {triangleCentroids}
+                  invertX={$user === "black"}
+                  invertY={$user === "black"}
                   on:move={updateCheckerPosition}
                 />
               {/each}

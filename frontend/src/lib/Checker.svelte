@@ -7,6 +7,8 @@
   export let color;
   export let triangleCentroids;
   export let draggable = false;
+  export let invertX = false;
+  export let invertY = false;
 
   const dispatch = createEventDispatcher();
 
@@ -52,6 +54,8 @@
   on:dragend={onDragEnd}
   bind:el={checker}
   bind:reset={resetDrag}
+  {invertX}
+  {invertY}
 >
   <div
     class="checker {color}"
