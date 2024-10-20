@@ -13,4 +13,5 @@ run:
 	venv/bin/fastapi dev main.py
 
 .PHONY: production
+production:
 	venv/bin/fastapi run main.py
