@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
+from pydantic import BaseModel
+from typing import List
 
 import sys
 import os
@@ -36,28 +37,33 @@ def read_root():
 @app.get("/game/{id}")
 def read_game(id: str):
     conn = Connector(id)
-    return conn.get(id)
+    return conn.get()
 
 
 @app.get("/game/{id}/roll")
 def roll(id: str):
     conn = Connector(id)
-    game = conn.get(id)
-    turn = len(game["turns"])
-    player = get_player(turn)
+    player = conn.get_last_player() == "w" and "b" or "w"
+    turn = conn.get_last_turn() + 1
     dice1 = roll_dice()
     dice2 = roll_dice()
     conn.add_throw(id, turn, player, dice1, dice2)
-    return conn.get(id)
+    return conn.get()
 
 
-@app.post("/game/{id}/turn")
-def add_turn(id: str, turn: str, state: str):
+class Move(BaseModel):
+    checker_id: str
+    start: int
+    end: int
+
+
+@app.post("/game/{id}/moves")
+def add_moves(id: str, moves: List[Move]):
     conn = Connector(id)
-    conn.add_turn(id, turn, get_player(turn), state)
-    return conn.get(id)
-
-
-# @app.get("/items/{item_id}")
-# def read_item(item_id: int, q: Union[str, None] = None):
-#     return {"item_id": item_id, "q": q}
+    turn = conn.get_last_turn() + 1
+    player = conn.get_last_player() == "w" and "b" or "w"
+    print(moves, "moves")
+    for move in moves:
+        print(id, turn, player, move.checker_id, move.start, move.end)
+        conn.add_move(id, turn, player, move.checker_id, move.start, move.end)
+    return "ok"

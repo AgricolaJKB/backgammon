@@ -1,10 +1,14 @@
 <script>
+  import { createEventDispatcher } from "svelte";
   import Draggable from "./Draggable.svelte";
 
+  export let id;
   export let position;
   export let color;
   export let triangleCentroids;
   export let draggable = false;
+
+  const dispatch = createEventDispatcher();
 
   let checker;
   let resetDrag = () => {};
@@ -24,25 +28,26 @@
             Math.pow(checkerCenter.y - curr.y, 2)
         );
         if (distance < acc.distance) {
-          return { distance, triangle: curr.triangle };
+          return { distance, ...curr };
         }
         return acc;
       },
       { distance: Infinity, triangle: null }
-    ).triangle;
-    const newContainer = closestTriangle.querySelector(".checkerContainer");
-    if (
-      !newContainer.children.length ||
-      newContainer.children[0].children[0].classList.contains(color)
-    ) {
-      console.log(newContainer?.children[0]?.children[0]?.classList);
-      closestTriangle.querySelector(".checkerContainer").appendChild(checker);
+    );
+    if (!closestTriangle.occupiedBy || closestTriangle.occupiedBy === color) {
+      closestTriangle.checkersContainer.appendChild(checker);
+      dispatch("move", {
+        checker_id: id,
+        start: position,
+        end: Number(closestTriangle.triangle.dataset.position),
+      });
     }
     resetDrag();
   };
 </script>
 
 <Draggable
+  {id}
   deactivated={!draggable}
   on:dragend={onDragEnd}
   bind:el={checker}

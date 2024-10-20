@@ -1,39 +1,86 @@
 <script>
   import Triangle from "./Triangle.svelte";
   import Checker from "./Checker.svelte";
-  import { currentPlayer } from "../store.js";
+  import {
+    currentPlayer,
+    moves,
+    gameState,
+    onTheMove,
+    user,
+    debug,
+  } from "../store.js";
   import { onMount } from "svelte";
+  import init from "../initial.json";
 
-  export let startSettings = {};
+  let startSettings = init.reduce((acc, curr) => {
+    if (!acc[curr.position]) {
+      acc[curr.position] = {
+        checkers: [],
+        color: curr.color,
+      };
+    }
+    acc[curr.position].checkers.push(curr.id);
+    return acc;
+  }, {});
+
+  const moveChecker = (id, to) => {
+    const checker = document.getElementById(id);
+    const toContainer = triangleCentroids[to].checkersContainer;
+    toContainer.appendChild(checker);
+  };
+
+  const updateCheckerPosition = (e) => {
+    const { checker_id, start, end } = e.detail;
+    const data = {
+      checker_id,
+      start,
+      end,
+    };
+    $moves = { ...$moves, [checker_id]: data };
+  };
 
   let triangleCentroids;
 
   onMount(() => {
+    // get the centroids of the triangles
     const triangles = document.querySelectorAll(".triangle");
     triangleCentroids = Array.from(triangles).map((triangle) => {
       const { left, top, width, height } = triangle.getBoundingClientRect();
+      const container = triangle.querySelector(".checkerContainer");
+      let occupiedBy = null;
+      if (container.children.length) {
+        occupiedBy = container.children[0].children[0].classList[1];
+      }
       return {
         x: left + width / 2,
         y: top + height / 2,
         triangle: triangle,
+        checkersContainer: triangle.querySelector(".checkerContainer"),
+        occupiedBy,
       };
     });
   });
 
-  const cleanup = () => {
-    startSettings = {};
-  };
+  $: {
+    // move checkers to the right position
+    const { moves } = $gameState || {};
+    if (moves) {
+      for (const move of moves) {
+        moveChecker(move.checker_id, move.end);
+      }
+    }
+  }
 </script>
 
 <!-- 1 board, 2 sides, 12 triangles per side  -->
-<div class="board">
+<div class="board {$user}">
   {#each Array.from({ length: 2 }) as _, side}
     <div class="side {side === 0 ? 'upper' : 'lower'}">
       {#each Array.from({ length: 12 }) as _, i}
         <div
           class="triangle root-triangle"
           style="width: {100 / 12}%"
-          data-position={i + side * 12}
+          data-position={$user === "white" ? i + side * 12 : i + side * 12}
         >
           <Triangle
             color={i % 2 === 0 ? "darkgrey" : "grey"}
@@ -41,13 +88,15 @@
           />
           <div class="checkerContainer {side === 1 && 'reversed'}">
             {#if startSettings[i + side * 12]}
-              {#each Array.from( { length: startSettings[i + side * 12].checkers } ) as _}
+              {#each startSettings[i + side * 12].checkers as checker}
                 <Checker
+                  id={checker}
                   position={i + side * 12}
                   color={startSettings[i + side * 12].color}
                   draggable={startSettings[i + side * 12].color ===
-                    $currentPlayer}
+                    $currentPlayer && $onTheMove}
                   {triangleCentroids}
+                  on:move={updateCheckerPosition}
                 />
               {/each}
             {/if}
@@ -56,15 +105,17 @@
       {/each}
     </div>
   {/each}
-  <!-- {#if triangleCentroids}
-    {#each triangleCentroids as { x, y, triangle }, i}
-      <div
-        class="marker"
-        style="position: absolute; top: {y}px; left: {x}px; color: white"
-      ></div>
-    {/each}
-  {/if} -->
 </div>
+{#if triangleCentroids && $debug}
+  {#each triangleCentroids as { x, y, triangle }, i}
+    <div
+      class="marker"
+      style="position: fixed; top: {y}px; left: {x}px; color: white"
+    >
+      {triangle.dataset.position}
+    </div>
+  {/each}
+{/if}
 
 <style lang="scss">
   .marker {
@@ -82,6 +133,10 @@
     max-width: 100%;
     max-height: 100%;
     background-color: darkgrey;
+
+    &.black {
+      transform: scale(-1);
+    }
   }
   .side {
     position: absolute;

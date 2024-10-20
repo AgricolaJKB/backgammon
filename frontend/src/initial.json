@@ -1,151 +1,151 @@
 [
     {
-        "position": "0",
+        "position": 0,
         "color": "white",
         "id": "0-0"
     },
     {
-        "position": "0",
+        "position": 0,
         "color": "white",
         "id": "0-1"
     },
     {
-        "position": "5",
+        "position": 5,
         "color": "black",
         "id": "5-0"
     },
     {
-        "position": "5",
+        "position": 5,
         "color": "black",
         "id": "5-1"
     },
     {
-        "position": "5",
+        "position": 5,
         "color": "black",
         "id": "5-2"
     },
     {
-        "position": "5",
+        "position": 5,
         "color": "black",
         "id": "5-3"
     },
     {
-        "position": "5",
+        "position": 5,
         "color": "black",
         "id": "5-4"
     },
     {
-        "position": "7",
+        "position": 7,
         "color": "black",
         "id": "7-0"
     },
     {
-        "position": "7",
+        "position": 7,
         "color": "black",
         "id": "7-1"
     },
     {
-        "position": "7",
+        "position": 7,
         "color": "black",
         "id": "7-2"
     },
     {
-        "position": "11",
+        "position": 11,
         "color": "white",
         "id": "11-0"
     },
     {
-        "position": "11",
+        "position": 11,
         "color": "white",
         "id": "11-1"
     },
     {
-        "position": "11",
+        "position": 11,
         "color": "white",
         "id": "11-2"
     },
     {
-        "position": "11",
+        "position": 11,
         "color": "white",
         "id": "11-3"
     },
     {
-        "position": "11",
+        "position": 11,
         "color": "white",
         "id": "11-4"
     },
     {
-        "position": "12",
+        "position": 12,
         "color": "black",
         "id": "12-0"
     },
     {
-        "position": "12",
+        "position": 12,
         "color": "black",
         "id": "12-1"
     },
     {
-        "position": "12",
+        "position": 12,
         "color": "black",
         "id": "12-2"
     },
     {
-        "position": "12",
+        "position": 12,
         "color": "black",
         "id": "12-3"
     },
     {
-        "position": "12",
+        "position": 12,
         "color": "black",
         "id": "12-4"
     },
     {
-        "position": "16",
+        "position": 16,
         "color": "white",
         "id": "16-0"
     },
     {
-        "position": "16",
+        "position": 16,
         "color": "white",
         "id": "16-1"
     },
     {
-        "position": "16",
+        "position": 16,
         "color": "white",
         "id": "16-2"
     },
     {
-        "position": "18",
+        "position": 18,
         "color": "white",
         "id": "18-0"
     },
     {
-        "position": "18",
+        "position": 18,
         "color": "white",
         "id": "18-1"
     },
     {
-        "position": "18",
+        "position": 18,
         "color": "white",
         "id": "18-2"
     },
     {
-        "position": "18",
+        "position": 18,
         "color": "white",
         "id": "18-3"
     },
     {
-        "position": "18",
+        "position": 18,
         "color": "white",
         "id": "18-4"
     },
     {
-        "position": "23",
+        "position": 23,
         "color": "black",
         "id": "23-0"
     },
     {
-        "position": "23",
+        "position": 23,
         "color": "black",
         "id": "23-1"
     }

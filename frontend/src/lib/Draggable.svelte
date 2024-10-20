@@ -6,7 +6,8 @@
   export let maxDrag = [Infinity, Infinity];
   export let resetAfterDrag = false;
   export let deactivated = false;
-  export let el;
+  export let el = null;
+  export let id = null;
 
   let left = 0;
   let top = 0;
@@ -51,11 +52,12 @@
 </script>
 
 <div
+  {id}
   bind:this={el}
   on:mousedown={onMouseDown}
   on:mouseup={onMouseUp}
   style="transform: translate({left}px, {top}px)"
-  class="draggable {deactivated && 'deactivated'}"
+  class="draggable {deactivated && 'deactivated'} {moving && 'moving'}"
 >
   <slot></slot>
 </div>
@@ -72,5 +74,9 @@
     -ms-user-select: none; /* IE 10 and IE 11 */
     user-select: none; /* Standard syntax */
     z-index: 2000;
+
+    &.moving {
+      z-index: 3000;
+    }
   }
 </style>

@@ -1,21 +1,32 @@
 <script>
   import Dice from "./Dice.svelte";
   import Draggable from "./Draggable.svelte";
-  import { currentPlayer, currentRoll, rollDices } from "../store.js";
+  import {
+    currentPlayer,
+    currentRoll,
+    moves,
+    user,
+    gameId,
+    onTheMove,
+  } from "../store.js";
+  import { rollDices, insertMoves } from "../api.js";
 
   let dices = $currentRoll;
 
   $: {
     dices = $currentRoll;
+    // console.log("user", $user);
+    // console.log("gameId", $gameId);
   }
 
   const roll = async () => {
     dices = await rollDices();
   };
 
-  const endTurn = () => {
-    // currentPlayer = currentPlayer === "white" ? "black" : "white";
-    dices = [null, null];
+  const endTurn = async () => {
+    console.log(Object.values($moves));
+    const okay = await insertMoves($gameId, Object.values($moves));
+    console.log(okay);
   };
 </script>
 
@@ -25,14 +36,14 @@
   </div>
 
   <div class="dice-container">
-    {#if !dices[0] && !dices[1]}
+    {#if !dices[0] && !dices[1] && $onTheMove}
       <span>Zieh die Würfel mit der Maus, um zu würfeln</span>
     {/if}
     <Draggable
       on:dragend={roll}
       maxDrag={[150, 150]}
       resetAfterDrag
-      deactivated={dices[0]}
+      deactivated={dices[0] || !$onTheMove}
     >
       <div class="dices">
         <Dice number={dices[0]} />
@@ -41,7 +52,7 @@
     </Draggable>
   </div>
 
-  {#if dices[0] && dices[1]}
+  {#if dices[0] && dices[1] && $onTheMove}
     <div class="actions">
       <button on:click={endTurn}>Zug beenden</button>
     </div>

@@ -10,34 +10,42 @@ def get_timestamp():
 class Connector:
     def __init__(self, id):
         self.id = id
-        self.turns = pd.read_csv("db/turns.csv")
+        self.moves = pd.read_csv("db/moves.csv")
         self.throws = pd.read_csv("db/throws.csv")
 
-    def get(self, id):
-        _turns = self.turns[self.turns["id"] == id]
-        _throws = self.throws[self.throws["id"] == id]
+        self.moves = self.moves[self.moves["id"] == id]
+        self.throws = self.throws[self.throws["id"] == id]
+
+    def get(self):
         return {
-            "turns": _turns.to_dict(orient="records"),
-            "throws": _throws.to_dict(orient="records"),
+            "moves": self.moves.to_dict(orient="records"),
+            "throws": self.throws.to_dict(orient="records"),
         }
 
-    def add_turn(self, id, turn, player, state):
-        # check if already exists
-        if not self.turns[
-            (self.turns["id"] == id) & (self.turns["turn"] == turn)
-        ].empty:
-            return
-        self.turns = self.turns._append(
+    def get_last_player(self):
+        if self.moves.empty:
+            return None
+        return self.moves.iloc[-1]["player"]
+
+    def get_last_turn(self):
+        if self.moves.empty:
+            return 0
+        return self.moves.iloc[-1]["turn"]
+
+    def add_move(self, id, turn, player, checker_id, start, end):
+        self.moves = self.moves._append(
             {
                 "id": id,
                 "turn": turn,
-                "time": player,
-                "state": state,
+                "player": player,
+                "checker_id": checker_id,
+                "start": start,
+                "end": end,
                 "timestamp": get_timestamp(),
             },
             ignore_index=True,
         )
-        self.turns.to_csv("db/turns.csv", index=False)
+        self.moves.to_csv("db/moves.csv", index=False)
 
     def add_throw(self, id, turn, player, dice1, dice2):
         # check if already exists
