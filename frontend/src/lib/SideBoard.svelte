@@ -18,7 +18,7 @@
   }
 
   const roll = async () => {
-    dices = await rollDices();
+    dices = await rollDices($gameId);
   };
 
   const endTurn = async () => {
