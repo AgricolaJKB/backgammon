@@ -12,10 +12,7 @@ sys.path.append(os.path.dirname(SCRIPT_DIR))
 from connector import Connector
 from utils import roll_dice, get_player
 
-origins = [
-    "http://localhost",
-    "http://localhost:5173",
-]
+origins = ["http://localhost", "http://localhost:5173", "https://agricolajkb.github.io"]
 
 
 app = FastAPI()

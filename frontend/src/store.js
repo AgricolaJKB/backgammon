@@ -27,7 +27,6 @@ const moves = writable({});
 const gameState = readable(null, (set, update) => {
   const interval = setInterval(async () => {
     const state = await getGameState();
-    // console.log(state);
     set(state);
   }, 1000);
   return () => clearInterval(interval);
