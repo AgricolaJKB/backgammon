@@ -3,8 +3,8 @@
 # install venv and dependencies
 .PHONY: setup
 setup:
-	python3 -m venv venv
-	. venv/bin/activate && pip install -r requirements.txt
+	python3.11 -m venv venv
+	. venv/bin/activate && pip3.11 install -r requirements.txt
 	deactivate
 
 # run the backend
