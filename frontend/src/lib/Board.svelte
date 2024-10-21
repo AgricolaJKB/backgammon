@@ -41,8 +41,7 @@
 
   let triangleCentroids;
 
-  onMount(() => {
-    // get the centroids of the triangles
+  const updateTriangleCentroids = () => {
     const triangles = document.querySelectorAll(".triangle");
     triangleCentroids = Array.from(triangles).map((triangle) => {
       const { left, top, width, height } = triangle.getBoundingClientRect();
@@ -59,6 +58,10 @@
         occupiedBy,
       };
     });
+  };
+
+  onMount(() => {
+    updateTriangleCentroids();
   });
 
   $: {
@@ -69,6 +72,7 @@
         moveChecker(move.checker_id, move.end);
       }
     }
+    updateTriangleCentroids();
   }
 </script>
 
