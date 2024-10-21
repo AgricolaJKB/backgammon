@@ -15,16 +15,13 @@
 
   $: {
     dices = $currentRoll;
-    // console.log("user", $user);
-    // console.log("gameId", $gameId);
   }
 
   const roll = async () => {
-    dices = await rollDices();
+    dices = await rollDices($gameId);
   };
 
   const endTurn = async () => {
-    console.log(Object.values($moves));
     const okay = await insertMoves($gameId, Object.values($moves));
     console.log(okay);
   };
