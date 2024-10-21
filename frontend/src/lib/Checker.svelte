@@ -37,7 +37,6 @@
       { distance: Infinity, triangle: null }
     );
     if (!closestTriangle.occupiedBy || closestTriangle.occupiedBy === color) {
-      console.log(closestTriangle);
       closestTriangle.checkersContainer.appendChild(checker);
       dispatch("move", {
         checker_id: id,
