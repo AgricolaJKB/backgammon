@@ -46,7 +46,7 @@ const currentRoll = derived(gameState, ($gameState) => {
   if (!$gameState) return [null, null];
   const lastTurn = $gameState.moves[$gameState.moves.length - 1];
   const lastRoll = $gameState.throws[$gameState.throws.length - 1];
-  if (!lastTurn || lastTurn.turn === lastRoll.turn) return [null, null];
+  if (lastTurn && lastTurn.turn === lastRoll.turn) return [null, null];
   return [lastRoll?.dice1 || null, lastRoll?.dice2 || null];
 });
 
