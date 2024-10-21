@@ -9,13 +9,15 @@ const debug = readable(false, (set) => {
 
 const user = readable(null, (set, update) => {
   const url = new URL(window.location.href);
-  const user = url.pathname.split("/")[2] || "white";
+  // const user = url.pathname.split("/")[2] || "white";
+  const user = url.searchParams.get("user") || "white";
   set(user);
 });
 
 const gameId = readable(null, (set, update) => {
   const url = new URL(window.location.href);
-  const gameId = url.pathname.split("/")[1] || "test";
+  // const gameId = url.pathname.split("/")[1] || "test";
+  const gameId = url.searchParams.get("game") || "test";
   set(gameId);
 });
 
