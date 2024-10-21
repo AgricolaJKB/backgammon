@@ -1,23 +1,25 @@
 import { readable, derived, writable } from "svelte/store";
 import { getGameState } from "./api";
 
-const debug = readable(false, (set) => {
+const getUrlParam = (param) => {
   const url = new URL(window.location.href);
-  const debug = url.searchParams.get("debug");
+  return url.searchParams.get(param);
+};
+
+const debug = readable(false, (set) => {
+  const debug = getUrlParam("debug");
   set(debug === "true");
 });
 
 const user = readable(null, (set, update) => {
-  const url = new URL(window.location.href);
   // const user = url.pathname.split("/")[2] || "white";
-  const user = url.searchParams.get("user") || "white";
+  const user = getUrlParam("user") || "white";
   set(user);
 });
 
 const gameId = readable(null, (set, update) => {
-  const url = new URL(window.location.href);
   // const gameId = url.pathname.split("/")[1] || "test";
-  const gameId = url.searchParams.get("game") || "test";
+  const gameId = getUrlParam("game") || "test";
   set(gameId);
 });
 
@@ -25,8 +27,9 @@ const moves = writable({});
 
 // server game state
 const gameState = readable(null, (set, update) => {
+  const gameId = getUrlParam("game") || "test";
   const interval = setInterval(async () => {
-    const state = await getGameState();
+    const state = await getGameState(gameId);
     set(state);
   }, 1000);
   return () => clearInterval(interval);
