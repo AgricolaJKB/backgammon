@@ -75,10 +75,10 @@
     -webkit-user-select: none; /* Safari */
     -ms-user-select: none; /* IE 10 and IE 11 */
     user-select: none; /* Standard syntax */
-    z-index: 2000;
+    z-index: 5000;
 
     &.moving {
-      z-index: 3000;
+      z-index: 5000;
     }
   }
 </style>

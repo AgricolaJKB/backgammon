@@ -26,11 +26,14 @@ const gameId = readable(null, (set, update) => {
 const moves = writable({});
 
 // server game state
+let lastState = null;
 const gameState = readable(null, (set, update) => {
   const gameId = getUrlParam("game") || "test";
   const interval = setInterval(async () => {
     const state = await getGameState(gameId);
+    if (JSON.stringify(state) === lastState) return;
     set(state);
+    lastState = JSON.stringify(state);
   }, 1000);
   return () => clearInterval(interval);
 });

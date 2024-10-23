@@ -15,12 +15,7 @@
 </script>
 
 <div class="game">
-  <div class="main">
-    <Board {startSettings} />
-  </div>
-  <div class="side">
-    <SideBoard />
-  </div>
+  <Board {startSettings} />
 </div>
 
 <style lang="scss">
@@ -31,18 +26,5 @@
     display: flex;
     align-items: center;
     justify-content: space-evenly;
-
-    .main {
-      width: 65%;
-      height: 100%;
-      float: left;
-    }
-
-    .side {
-      width: 25%;
-      height: 100%;
-      float: right;
-      align-self: flex-start;
-    }
   }
 </style>
