@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 from typing import List
 
 import sys
@@ -10,6 +9,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
 
 from connector import Connector
+from models import Move
 from utils import roll_dice, get_player
 
 origins = ["http://localhost", "http://localhost:5173", "https://agricolajkb.github.io"]
@@ -46,12 +46,6 @@ def roll(id: str):
     dice2 = roll_dice()
     conn.add_throw(id, turn, player, dice1, dice2)
     return conn.get()
-
-
-class Move(BaseModel):
-    checker_id: str
-    start: int
-    end: int
 
 
 @app.post("/{id}/moves")
