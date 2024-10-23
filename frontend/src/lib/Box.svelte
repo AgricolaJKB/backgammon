@@ -40,6 +40,7 @@
       }
     }
     &.checkerContainer {
+      justify-content: space-evenly;
       // display only first 4 checkers
       :global(.draggable) {
         display: none !important;
