@@ -67,13 +67,10 @@
       closestTriangle.length === 1 &&
       closestTriangle.occupiedBy !== color
     ) {
-      // move checker of opposite color to hit area
       const hitArea = document.querySelector(
         `.hit.${color === "white" ? "black" : "white"}`
       );
       const hitChecker = closestTriangle.checkersContainer.children[0];
-
-      console.log(hitChecker, hitArea);
       dispatch("move", {
         checker_id: hitChecker.id,
         start: Number(closestTriangle.triangle.dataset.position),
@@ -84,7 +81,6 @@
         start: position,
         end: Number(closestTriangle.triangle.dataset.position),
       });
-
       // occupied by more than one checker of opposite color
     } else {
       containerBeforeDrag.appendChild(checker);
