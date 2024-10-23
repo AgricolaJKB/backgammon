@@ -215,6 +215,10 @@
     width: 100%;
     height: 100%;
     pointer-events: none;
+
+    // :global(.draggable) {
+    //   z-index: 20000;
+    // }
   }
   .main-area {
     width: 65%;
