@@ -65,7 +65,8 @@
       // occupied by one checker of opposite color
     } else if (
       closestTriangle.length === 1 &&
-      closestTriangle.occupiedBy !== color
+      closestTriangle.occupiedBy !== color &&
+      closestTriangle.triangle.classList.contains("triangle")
     ) {
       const hitArea = document.querySelector(
         `.hit.${color === "white" ? "black" : "white"}`
