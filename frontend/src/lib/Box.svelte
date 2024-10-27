@@ -1,14 +1,32 @@
 <script>
+  import { onMount } from "svelte";
+
   export let position;
   export let color;
   export let type;
-  export let numberOfChildren;
+
+  let numberOfChildren;
+  let el;
+
+  // check via el if there are children
+  // update via mutation observer
+  const observer = new MutationObserver(() => {
+    numberOfChildren = el.querySelectorAll(".draggable").length;
+  });
+
+  onMount(() => {
+    observer.observe(el, { childList: true });
+  });
 </script>
 
-<div class="{color} checkerContainer {type} box" data-position={position}>
+<div
+  class="{color} checkerContainer {type} box"
+  data-position={position}
+  bind:this={el}
+>
   <span class="label {color}"></span>
-  {#if numberOfChildren > 3}
-    <span class="bottom-info">+{numberOfChildren - 3}</span>
+  {#if numberOfChildren > 1}
+    <span class="bottom-info">+{numberOfChildren - 1}</span>
   {/if}
 </div>
 
@@ -44,13 +62,17 @@
       // display only first 4 checkers
       :global(.draggable) {
         display: none !important;
-        &:nth-child(-n + 4) {
+        &:nth-child(-n + 3) {
           display: block !important;
         }
       }
     }
 
     .bottom-info {
+      position: absolute;
+      bottom: 0.5rem;
+      left: 50%;
+      transform: translateX(-50%);
       color: white;
     }
   }

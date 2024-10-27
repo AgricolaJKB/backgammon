@@ -1,20 +1,34 @@
 <script>
   import Dice from "./Dice.svelte";
   import Draggable from "./Draggable.svelte";
+  import History from "./History.svelte";
   import {
     currentPlayer,
     currentRoll,
+    currentTurn,
     moves,
     user,
     gameId,
     onTheMove,
+    gameState,
   } from "../store.js";
   import { rollDices, insertMoves } from "../api.js";
+
+  export let moveChecker = () => {};
+
+  let forcedTurn;
+  let forcedPlayer;
+  let forcedDices;
+
+  $: playerToDisplay = forcedPlayer || $currentPlayer;
+  $: turnToDisplay = forcedTurn || $currentTurn;
+  $: isForced = forcedPlayer && forcedTurn;
 
   let dices = $currentRoll;
 
   $: {
-    dices = $currentRoll;
+    dices = forcedDices || $currentRoll;
+    console.log(dices, forcedDices);
   }
 
   const roll = async () => {
@@ -23,18 +37,25 @@
 
   const endTurn = async () => {
     const okay = await insertMoves($gameId, Object.values($moves));
-    console.log(okay);
+    $moves = {};
   };
 </script>
 
 <div class="container">
-  <div class="info {$currentPlayer}">
-    <p>{$currentPlayer === "white" ? "Weiß" : "Schwarz"} ist am Zug</p>
+  <div class="header">
+    <div class="info {playerToDisplay}">
+      <p class="player">
+        {playerToDisplay === "white" ? "Weiß" : "Schwarz"}
+        {isForced ? "war" : "ist"} am Zug
+      </p>
+      <p class="turn">Zug {turnToDisplay}</p>
+    </div>
+    <History {moveChecker} bind:forcedPlayer bind:forcedTurn bind:forcedDices />
   </div>
 
   <div class="dice-container">
     {#if !dices[0] && !dices[1] && $onTheMove}
-      <span>Zieh die Würfel mit der Maus, um zu würfeln</span>
+      <span>Zieh die Würfel mit der Maus,<br />um zu würfeln</span>
     {/if}
     <Draggable
       on:dragend={roll}
@@ -65,28 +86,45 @@
     }
   }
 
+  .header {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
   .info {
     width: 100%;
     text-align: center;
     box-sizing: border-box;
     -moz-box-sizing: border-box;
     -webkit-box-sizing: border-box;
+    padding: 2rem;
 
     p {
       margin: 0;
-      padding: 2rem;
       font-weight: bold;
+      &.turn {
+        font-size: 0.75rem;
+      }
     }
 
     &.black {
       color: white;
       background-color: black;
       border: 2px solid black;
+      .turn {
+        color: rgb(220, 220, 220);
+      }
     }
     &.white {
       color: black;
       background-color: white;
       border: 2px solid black;
+      .turn {
+        color: darkslategray;
+      }
     }
   }
 
@@ -99,10 +137,15 @@
   .dice-container {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 0.5rem;
     align-items: center;
     justify-content: center;
     color: #c3c3c3;
+
+    span {
+      text-align: center;
+      font-size: 0.75rem;
+    }
   }
 
   .actions {

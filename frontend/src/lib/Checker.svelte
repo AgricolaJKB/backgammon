@@ -112,5 +112,6 @@
     height: 2rem;
     border-radius: 50%;
     margin: 0.5rem;
+    box-sizing: border-box;
   }
 </style>

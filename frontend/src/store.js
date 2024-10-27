@@ -45,6 +45,14 @@ const currentPlayer = derived(gameState, ($gameState) => {
   return lastPlayer === "w" ? "black" : "white";
 });
 
+const currentTurn = derived(gameState, ($gameState) => {
+  if (!$gameState) return 1;
+  const lastTurn = $gameState.moves[$gameState.moves.length - 1];
+  const lastRoll = $gameState.throws[$gameState.throws.length - 1];
+  if (lastTurn && lastTurn.turn === lastRoll.turn) return lastRoll.turn + 1;
+  return lastRoll?.turn || 1;
+});
+
 const currentRoll = derived(gameState, ($gameState) => {
   if (!$gameState) return [null, null];
   const lastTurn = $gameState.moves[$gameState.moves.length - 1];
@@ -62,6 +70,7 @@ export {
   gameState,
   currentPlayer,
   currentRoll,
+  currentTurn,
   moves,
   user,
   gameId,

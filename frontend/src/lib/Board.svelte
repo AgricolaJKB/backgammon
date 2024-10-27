@@ -34,6 +34,7 @@
 
   const updateCheckerPosition = (e) => {
     const { checker_id, start, end } = e.detail;
+    if (start === end) return;
     const data = {
       checker_id,
       start,
@@ -119,7 +120,7 @@
 </script>
 
 <div class="side-area">
-  <SideBoard />
+  <SideBoard {moveChecker} />
   <div class="hit-area">
     <span class="label">Geschlagen</span>
     <div class="boxes">
