@@ -12,9 +12,11 @@ class Connector:
         self.id = id
         self.moves = pd.read_csv("db/moves.csv")
         self.throws = pd.read_csv("db/throws.csv")
+        self.players = pd.read_csv("db/players.csv")
 
         self.moves = self.moves[self.moves["id"] == id]
         self.throws = self.throws[self.throws["id"] == id]
+        self.players = self.players[self.players["id"] == id]
 
     def get(self):
         return {
@@ -65,3 +67,6 @@ class Connector:
             ignore_index=True,
         )
         self.throws.to_csv("db/throws.csv", index=False)
+
+    def get_mail(self, player):
+        return self.players[self.players["player"] == player]["mail"].values[0]

@@ -11,6 +11,7 @@ sys.path.append(os.path.dirname(SCRIPT_DIR))
 from connector import Connector
 from models import Move
 from utils import roll_dice, get_player
+from mail import notify
 
 origins = ["http://localhost", "http://localhost:5173", "https://agricolajkb.github.io"]
 
@@ -53,8 +54,7 @@ def add_moves(id: str, moves: List[Move]):
     conn = Connector(id)
     turn = conn.get_last_turn() + 1
     player = conn.get_last_player() == "w" and "b" or "w"
-    print(moves, "moves")
     for move in moves:
-        print(id, turn, player, move.checker_id, move.start, move.end)
         conn.add_move(id, turn, player, move.checker_id, move.start, move.end)
+    notify(id, conn.get_mail(conn.get_last_player()), moves)
     return "ok"
