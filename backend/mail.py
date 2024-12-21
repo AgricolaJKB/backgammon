@@ -4,11 +4,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-{
-    dices: [1, 6],
-    moves: [{checker_id: "1", start: "5", end: "6"}],
-    current_move: {checker_id: "6", start: "5", end: "11"},
-}
+# {
+#     dices: [1, 6],
+#     moves: [{checker_id: "1", start: "5", end: "6"}],
+#     current_move: {checker_id: "6", start: "5", end: "11"},
+# }
 
 
 def create_message(message, subject, sender, receiver):

@@ -53,9 +53,24 @@
       },
       { distance: Infinity, triangle: null }
     );
-    console.log(closestTriangle);
-    // occupied by the same color or empty
-    if (!closestTriangle.occupiedBy || closestTriangle.occupiedBy === color) {
+    // checker on same position as before
+    if (closestTriangle.triangle.dataset.position == position) {
+      containerBeforeDrag.appendChild(checker);
+      // white checkers can only move
+      // updawrds and black checkers can only move downwards
+    } else if (
+      closestTriangle.triangle.dataset.position <= 23 &&
+      ((color === "white" &&
+        closestTriangle.triangle.dataset.position < position) ||
+        (color === "black" &&
+          closestTriangle.triangle.dataset.position > position))
+    ) {
+      containerBeforeDrag.appendChild(checker);
+      // occupied by the same color or empty
+    } else if (
+      !closestTriangle.occupiedBy ||
+      closestTriangle.occupiedBy === color
+    ) {
       // closestTriangle.checkersContainer.appendChild(checker);
       dispatch("move", {
         checker_id: id,
