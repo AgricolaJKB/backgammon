@@ -2,7 +2,7 @@
   import { currentTurn, gameState, moves } from "../store.js";
   import initial from "../initial.json";
 
-  export let moveChecker;
+  export let forcedCheckerPositions;
   export let forcedPlayer;
   export let forcedTurn;
   export let forcedDices;
@@ -37,35 +37,33 @@
 
   const handleMouseEnter = (turn) => {
     lastViewedTurn = turn;
-    const { state, moves, throw: _throw, player } = infoByTurn[turn - 1];
-    console.log(infoByTurn[turn], turn);
-    state.forEach((t) => {
-      moveChecker(t.id, t.position);
-    });
+    const { state, moves, throw: _throw, player } = infoByTurn[turn];
+    console.log("info", infoByTurn[turn], turn);
+
     forcedPlayer = player;
-    forcedTurn = turn;
+    forcedTurn = turn + 1;
     forcedDices = [_throw.dice1, _throw.dice2];
-    moves.forEach((m) => {
-      document.getElementById(`${m.checker_id}`).children[0].style.border =
-        "3px solid red";
-      moveChecker(m.checker_id, m.end);
-    });
+
+    forcedCheckerPositions = state.reduce((acc, curr) => {
+      acc[curr.position] = acc[curr.position] || [];
+      // if checker has been moved, add it to the new position
+      const move = moves.find((m) => m.checker_id === curr.id);
+      if (!move) {
+        acc[curr.position].push({ id: curr.id, color: curr.color });
+      } else {
+        acc[move.end] = acc[move.end] || [];
+        acc[move.end].push({
+          id: curr.id,
+          color: curr.color,
+          hasBeenMoved: true,
+        });
+      }
+      return acc;
+    }, {});
   };
 
   const handleMouseOut = () => {
-    const { moves: mvs, player } = infoByTurn[lastViewedTurn - 1];
-    mvs.forEach((m) => {
-      document.getElementById(`${m.checker_id}`).children[0].style.border =
-        "1px solid black";
-    });
-    $gameState.moves.forEach((m) => {
-      moveChecker(m.checker_id, m.end);
-    });
-    if ($moves) {
-      Object.values($moves).forEach((m) => {
-        moveChecker(m.checker_id, m.end);
-      });
-    }
+    forcedCheckerPositions = null;
     forcedPlayer = null;
     forcedTurn = null;
     forcedDices = null;
@@ -77,7 +75,7 @@
   {#each infoByTurn as info, i}
     <div
       class="info {info.player}"
-      on:mouseenter={() => handleMouseEnter(i + 1)}
+      on:mouseenter={() => handleMouseEnter(i)}
       on:mouseout={() => handleMouseOut()}
     />
   {/each}
@@ -104,7 +102,7 @@
         background-color: black;
       }
       &:hover {
-        flex-grow: 2;
+        flex-grow: 1;
         // height: 100%;
         // background-color: rebeccapurple;
       }

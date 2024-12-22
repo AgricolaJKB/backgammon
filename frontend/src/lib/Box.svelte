@@ -25,6 +25,7 @@
   bind:this={el}
 >
   <span class="label {color}"></span>
+  <slot></slot>
   {#if numberOfChildren > 1}
     <span class="bottom-info">+{numberOfChildren - 1}</span>
   {/if}
@@ -62,7 +63,7 @@
       // display only first 4 checkers
       :global(.draggable) {
         display: none !important;
-        &:nth-child(-n + 3) {
+        &:nth-child(-n + 2) {
           display: block !important;
         }
       }

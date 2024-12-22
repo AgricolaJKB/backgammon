@@ -12,28 +12,81 @@
     user,
     debug,
   } from "../store.js";
-  import { onMount } from "svelte";
   import init from "../initial.json";
 
-  let startSettings = init.reduce((acc, curr) => {
+  let forcedCheckerPositions = null;
+
+  let checkerPositions = init.reduce((acc, curr) => {
     if (!acc[curr.position]) {
-      acc[curr.position] = {
-        checkers: [],
-        color: curr.color,
-      };
+      acc[curr.position] = [];
     }
-    acc[curr.position].checkers.push(curr.id);
+    acc[curr.position].push({ id: curr.id, color: curr.color });
     return acc;
   }, {});
 
-  const moveChecker = (id, to) => {
-    const checker = document.getElementById(id);
-    const toContainer = triangleCentroids[to].checkersContainer;
-    toContainer.appendChild(checker);
+  $: _checkerPositions = forcedCheckerPositions || checkerPositions;
+  $: console.log("checker", _checkerPositions);
+  const checkersById = init.reduce((acc, curr) => {
+    acc[curr.id] = curr;
+    return acc;
+  }, {});
+
+  const moveChecker = (id, from, to) => {
+    const checker = checkersById[id];
+    checkerPositions[from] = checkerPositions[from].filter(
+      (c) => c.id !== checker.id
+    );
+    if (!checkerPositions[to]) {
+      checkerPositions[to] = [];
+    }
+    // case 1: move to empty position
+    if (!checkerPositions[to].length) {
+      checkerPositions[to].push(checker);
+      return;
+    }
+    // case 2: move to position with same color
+    if (checkerPositions[to][0].color === checker.color) {
+      checkerPositions[to].push(checker);
+      return;
+    }
+    // case 3: move to position with one checker of opposite color
+    if (checkerPositions[to].length === 1) {
+      moveChecker(checkerPositions[to][0].id, to, `hit-area-${checker.color}`);
+      checkerPositions[to].push(checker);
+      return;
+    }
+  };
+
+  const getClosestContainer = ({ x, y }) => {
+    const containersCentroids = [
+      ...document.querySelectorAll(".checkerContainer"),
+    ].map((container) => {
+      const { left, top, width, height } = container.getBoundingClientRect();
+      return {
+        x: left + width / 2,
+        y: top + height / 2,
+        id: container.dataset.position,
+      };
+    });
+    const closestContainer = containersCentroids.reduce(
+      (acc, curr) => {
+        const distance = Math.sqrt(
+          Math.pow(x - curr.x, 2) + Math.pow(y - curr.y, 2)
+        );
+        if (distance < acc.distance) {
+          return { distance, ...curr };
+        }
+        return acc;
+      },
+      { distance: Infinity, id: null }
+    );
+    return closestContainer.id;
   };
 
   const updateCheckerPosition = (e) => {
-    const { checker_id, start, end } = e.detail;
+    const { checker_id, start, coordinates } = e.detail;
+    console.log("updateCheckerPosition", checker_id, start, coordinates);
+    const end = getClosestContainer(coordinates);
     if (start === end) return;
     const data = {
       checker_id,
@@ -41,100 +94,35 @@
       end,
     };
     $moves = { ...$moves, [checker_id]: data };
-    triangleCentroids[end].checkersContainer.appendChild(
-      document.getElementById(checker_id)
-    );
-    updateTriangleCentroids();
+    moveChecker(checker_id, start, end);
   };
-
-  let triangleCentroids;
-
-  const updateTriangleCentroids = () => {
-    const triangles = document.querySelectorAll(".triangle");
-    triangleCentroids = Array.from(triangles).map((triangle) => {
-      const { left, top, width, height } = triangle.getBoundingClientRect();
-      const container = triangle.querySelector(".checkerContainer");
-      let occupiedBy = null;
-      let length = 0;
-      if (container.children.length) {
-        occupiedBy = container.children[0].children[0].classList[1];
-        length = container.children.length;
-      }
-      return {
-        x: left + width / 2,
-        y: top + height / 2,
-        triangle: triangle,
-        checkersContainer: triangle.querySelector(".checkerContainer"),
-        occupiedBy,
-        length,
-      };
-    });
-    const hitAreas = document.querySelectorAll(".hit");
-    triangleCentroids = triangleCentroids.concat(
-      Array.from(hitAreas).map((hit) => {
-        const { left, top, width, height } = hit.getBoundingClientRect();
-        return {
-          x: left + width / 2,
-          y: top + height / 2,
-          triangle: hit,
-          checkersContainer: hit,
-          occupiedBy: hit.classList[0],
-          length: new Array(...hit.children).filter((el) =>
-            el.classList.contains("draggable")
-          ).length,
-        };
-      })
-    );
-    const outAreas = document.querySelectorAll(".out");
-    triangleCentroids = triangleCentroids.concat(
-      Array.from(outAreas).map((out) => {
-        const { left, top, width, height } = out.getBoundingClientRect();
-        return {
-          x: left + width / 2,
-          y: top + height / 2,
-          triangle: out,
-          checkersContainer: out,
-          occupiedBy: out.classList[0],
-          length: new Array(...out.children).filter((el) =>
-            el.classList.contains("draggable")
-          ).length,
-        };
-      })
-    );
-  };
-
-  onMount(() => {
-    updateTriangleCentroids();
-  });
 
   $: {
     // move checkers to the right position
     const { moves } = $gameState || {};
     if (moves) {
       for (const move of moves) {
-        moveChecker(move.checker_id, move.end);
+        moveChecker(move.checker_id, move.start, move.end);
       }
     }
-    updateTriangleCentroids();
   }
 </script>
 
 <div class="side-area">
-  <SideBoard {moveChecker} />
+  <SideBoard bind:forcedCheckerPositions />
   <div class="hit-area">
     <span class="label">Geschlagen</span>
     <div class="boxes">
       {#each ["white", "black"] as color, i}
-        <!-- <div class="{color} checkerContainer hit box" data-position={24 + i}>
-          <span class="label {color}"></span>
-        </div> -->
-        <Box
-          position={24 + i}
-          {color}
-          type="hit"
-          numberOfChildren={triangleCentroids &&
-            triangleCentroids[24 + i]?.length}
-        />
+        <Box position={`hit-area-${color}`} {color} type="hit">
+          {#each _checkerPositions[`hit-area-${color}`] || [] as checker}
+            <Checker
+              {...checker}
+              position={`hit-area-${color}`}
+              on:move={updateCheckerPosition}
+            />
+          {/each}
+        </Box>
       {/each}
     </div>
   </div>
@@ -142,16 +130,15 @@
     <span class="label">Im Ziel</span>
     <div class="boxes">
       {#each ["white", "black"] as color, i}
-        <!-- <div class="{color} checkerContainer out box" data-position={26 + i}>
-          <span class="label {color}"></span>
-        </div> -->
-        <Box
-          position={26 + i}
-          {color}
-          type="out"
-          numberOfChildren={triangleCentroids &&
-            triangleCentroids[26 + i]?.length}
-        />
+        <Box position={`out-area-${color}`} {color} type="out">
+          {#each _checkerPositions[`hit-area-${color}`] || [] as checker}
+            <Checker
+              {...checker}
+              position={`out-area-${color}`}
+              on:move={updateCheckerPosition}
+            />
+          {/each}
+        </Box>
       {/each}
     </div>
   </div>
@@ -162,25 +149,20 @@
     {#each Array.from({ length: 2 }) as _, side}
       <div class="side {side === 0 ? 'upper' : 'lower'}">
         {#each Array.from({ length: 12 }) as _, i}
-          <div
-            class="triangle root-triangle"
-            style="width: {100 / 12}%"
-            data-position={$user === "white" ? i + side * 12 : i + side * 12}
-          >
+          <div class="triangle root-triangle" style="width: {100 / 12}%">
             <Triangle
               color={i % 2 === 0 ? "darkgrey" : "grey"}
               reversed={side === 0}
             />
-            <div class="checkerContainer {side === 1 && 'reversed'} ">
-              {#if startSettings[i + side * 12]}
-                {#each startSettings[i + side * 12].checkers as checker}
+            <div
+              class="checkerContainer {side === 1 && 'reversed'} "
+              data-position={i + side * 12}
+            >
+              {#if _checkerPositions[i + side * 12]}
+                {#each _checkerPositions[i + side * 12] as checker}
                   <Checker
-                    id={checker}
+                    {...checker}
                     position={i + side * 12}
-                    color={startSettings[i + side * 12].color}
-                    draggable={startSettings[i + side * 12].color ===
-                      $currentPlayer && $onTheMove}
-                    {triangleCentroids}
                     invertX={$user === "black"}
                     invertY={$user === "black"}
                     on:move={updateCheckerPosition}
@@ -193,7 +175,7 @@
       </div>
     {/each}
   </div>
-  {#if triangleCentroids && $debug}
+  <!-- {#if triangleCentroids && $debug}
     {#each triangleCentroids as { x, y, triangle }, i}
       <div
         class="marker"
@@ -202,7 +184,7 @@
         {triangle.dataset.position}
       </div>
     {/each}
-  {/if}
+  {/if} -->
 </div>
 <div class="moving-checker-cache"></div>
 

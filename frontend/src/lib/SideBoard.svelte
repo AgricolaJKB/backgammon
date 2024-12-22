@@ -14,7 +14,7 @@
   } from "../store.js";
   import { rollDices, insertMoves } from "../api.js";
 
-  export let moveChecker = () => {};
+  export let forcedCheckerPositions;
 
   let forcedTurn;
   let forcedPlayer;
@@ -50,7 +50,12 @@
       </p>
       <p class="turn">Zug {turnToDisplay}</p>
     </div>
-    <History {moveChecker} bind:forcedPlayer bind:forcedTurn bind:forcedDices />
+    <History
+      bind:forcedCheckerPositions
+      bind:forcedPlayer
+      bind:forcedTurn
+      bind:forcedDices
+    />
   </div>
 
   <div class="dice-container">
