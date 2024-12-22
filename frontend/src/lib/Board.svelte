@@ -4,14 +4,7 @@
   import SideBoard from "./SideBoard.svelte";
   import Box from "./Box.svelte";
 
-  import {
-    currentPlayer,
-    moves,
-    gameState,
-    onTheMove,
-    user,
-    debug,
-  } from "../store.js";
+  import { moves, gameState, user, debug } from "../store.js";
   import init from "../initial.json";
 
   let forcedCheckerPositions = null;
@@ -24,10 +17,21 @@
     return acc;
   }, {});
 
+  $: {
+    // move checkers to the right position
+    // initially and on server state change
+    const { moves } = $gameState || {};
+    if (moves) {
+      for (const move of moves) {
+        moveChecker(move.checker_id, move.start, move.end);
+      }
+    }
+  }
+
   $: _checkerPositions = forcedCheckerPositions || checkerPositions;
-  $: console.log("checker", _checkerPositions);
+
   const checkersById = init.reduce((acc, curr) => {
-    acc[curr.id] = curr;
+    acc[curr.id] = { id: curr.id, color: curr.color };
     return acc;
   }, {});
 
@@ -51,7 +55,11 @@
     }
     // case 3: move to position with one checker of opposite color
     if (checkerPositions[to].length === 1) {
-      moveChecker(checkerPositions[to][0].id, to, `hit-area-${checker.color}`);
+      moveChecker(
+        checkerPositions[to][0].id,
+        to,
+        `hit-area-${checkerPositions[to][0].color}`
+      );
       checkerPositions[to].push(checker);
       return;
     }
@@ -84,10 +92,23 @@
   };
 
   const updateCheckerPosition = (e) => {
-    const { checker_id, start, coordinates } = e.detail;
-    console.log("updateCheckerPosition", checker_id, start, coordinates);
+    const { checker_id, start, coordinates, reset } = e.detail;
+    const checker = checkersById[checker_id];
     const end = getClosestContainer(coordinates);
-    if (start === end) return;
+    if (
+      start === end ||
+      (!start.includes("hit") &&
+        !start.includes("out") &&
+        checker.color === "white" &&
+        Number(start) > Number(end)) ||
+      (!start.includes("hit") &&
+        !start.includes("out") &&
+        checker.color === "black" &&
+        Number(start) < Number(end))
+    ) {
+      reset();
+      return;
+    }
     const data = {
       checker_id,
       start,
@@ -96,16 +117,6 @@
     $moves = { ...$moves, [checker_id]: data };
     moveChecker(checker_id, start, end);
   };
-
-  $: {
-    // move checkers to the right position
-    const { moves } = $gameState || {};
-    if (moves) {
-      for (const move of moves) {
-        moveChecker(move.checker_id, move.start, move.end);
-      }
-    }
-  }
 </script>
 
 <div class="side-area">
@@ -131,7 +142,7 @@
     <div class="boxes">
       {#each ["white", "black"] as color, i}
         <Box position={`out-area-${color}`} {color} type="out">
-          {#each _checkerPositions[`hit-area-${color}`] || [] as checker}
+          {#each _checkerPositions[`out-area-${color}`] || [] as checker}
             <Checker
               {...checker}
               position={`out-area-${color}`}
@@ -163,8 +174,6 @@
                   <Checker
                     {...checker}
                     position={i + side * 12}
-                    invertX={$user === "black"}
-                    invertY={$user === "black"}
                     on:move={updateCheckerPosition}
                   />
                 {/each}

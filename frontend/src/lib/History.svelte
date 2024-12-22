@@ -86,7 +86,7 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    height: 1.25rem;
+    height: 1.5rem;
     width: 100%;
     background-color: #c3c3c3;
     padding: 0.2rem;

@@ -7,9 +7,8 @@
   export let id;
   export let position;
   export let color;
+  export let hasBeenMoved;
   export let draggable = false;
-  export let invertX = false;
-  export let invertY = false;
 
   const dispatch = createEventDispatcher();
 
@@ -40,13 +39,19 @@
     const checkerCenter = { x: left + width / 2, y: top + height / 2 };
     dispatch("move", {
       checker_id: id,
-      start: position,
+      start: String(position),
       coordinates: checkerCenter,
+      reset: () => containerBeforeDrag.appendChild(checker),
     });
     resetDrag();
+    // containerBeforeDrag.appendChild(checker);
     cache.style.pointerEvents = "none";
     checker.style.position = "static";
   };
+
+  onMount(() => {
+    console.log("create checker", id, position, color, hasBeenMoved);
+  });
 </script>
 
 <Draggable
@@ -59,16 +64,36 @@
 >
   <div
     class="checker {color}"
-    style="background-color: {color}; border: 1px solid black"
-  />
+    style="background-color: {color}; border: {hasBeenMoved
+      ? '2px'
+      : '1px'} solid black"
+  >
+    {#if hasBeenMoved}
+      <div
+        class="moved"
+        style="background-color: {color === 'white' ? 'black' : 'white'}"
+      />
+    {/if}
+  </div>
 </Draggable>
 
 <style>
   .checker {
+    position: relative;
     width: 2rem;
     height: 2rem;
     border-radius: 50%;
     margin: 0.5rem;
     box-sizing: border-box;
+  }
+  .moved {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    border-width: 2px;
   }
 </style>
