@@ -6,8 +6,10 @@
 
   import { moves, gameState, user, debug } from "../store.js";
   import init from "../initial.json";
+  import { onMount } from "svelte";
+  import { getUsableDice } from "./utils.js";
 
-  let forcedCheckerPositions = null;
+  $: forcedCheckerPositions = null;
 
   let checkerPositions = init.reduce((acc, curr) => {
     if (!acc[curr.position]) {
@@ -65,17 +67,22 @@
     }
   };
 
-  const getClosestContainer = ({ x, y }) => {
-    const containersCentroids = [
-      ...document.querySelectorAll(".checkerContainer"),
+  let containersCentroids;
+
+  onMount(() => {
+    containersCentroids = [
+      ...document.querySelectorAll(".checkerContainer")
     ].map((container) => {
       const { left, top, width, height } = container.getBoundingClientRect();
       return {
         x: left + width / 2,
         y: top + height / 2,
-        id: container.dataset.position,
+        id: container.dataset.position
       };
     });
+  });
+
+  const getClosestContainer = ({ x, y }) => {
     const closestContainer = containersCentroids.reduce(
       (acc, curr) => {
         const distance = Math.sqrt(
@@ -95,7 +102,14 @@
     const { checker_id, start, coordinates, reset } = e.detail;
     const checker = checkersById[checker_id];
     const end = getClosestContainer(coordinates);
+    const dices = $gameState.throws[$gameState.throws.length - 1];
+    const usedDice = getUsableDice({
+      dices: [dices.dice1, dices.dice2],
+      usedDices: $moves.map((m) => m.usedDice),
+      currentMove: { start, end }
+    });
     if (
+      !usedDice ||
       start === end ||
       (!start.includes("hit") &&
         !start.includes("out") &&
@@ -113,8 +127,10 @@
       checker_id,
       start,
       end,
+      usedDice: usedDice
     };
-    $moves = { ...$moves, [checker_id]: data };
+    // $moves = { ...$moves, [checker_id]: data };
+    $moves = [...$moves, data];
     moveChecker(checker_id, start, end);
   };
 </script>
@@ -184,16 +200,16 @@
       </div>
     {/each}
   </div>
-  <!-- {#if triangleCentroids && $debug}
-    {#each triangleCentroids as { x, y, triangle }, i}
+  {#if containersCentroids && $debug}
+    {#each containersCentroids as { x, y, id }, i}
       <div
         class="marker"
-        style="position: fixed; top: {y}px; left: {x}px; color: white"
+        style="position: fixed; top: {y}px; left: {x}px; color: white; pointer-events: none"
       >
-        {triangle.dataset.position}
+        {id}
       </div>
     {/each}
-  {/if} -->
+  {/if}
 </div>
 <div class="moving-checker-cache"></div>
 

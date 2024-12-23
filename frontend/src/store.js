@@ -23,7 +23,8 @@ const gameId = readable(null, (set, update) => {
   set(gameId);
 });
 
-const moves = writable({});
+// const moves = writable({});
+const moves = writable([]);
 
 // server game state
 let lastState = null;
@@ -75,5 +76,5 @@ export {
   user,
   gameId,
   debug,
-  onTheMove,
+  onTheMove
 };
