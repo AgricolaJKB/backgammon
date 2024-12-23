@@ -27,6 +27,7 @@
   const onDragStart = () => {
     containerBeforeDrag = checker.parentElement;
     const { left, top } = checker.getBoundingClientRect();
+    console.log("onDragStart", left, top, checker);
     cache.appendChild(checker);
     checker.style.position = "absolute";
     checker.style.left = `${left}px`;
@@ -44,14 +45,9 @@
       reset: () => containerBeforeDrag.appendChild(checker),
     });
     resetDrag();
-    // containerBeforeDrag.appendChild(checker);
     cache.style.pointerEvents = "none";
     checker.style.position = "static";
   };
-
-  onMount(() => {
-    console.log("create checker", id, position, color, hasBeenMoved);
-  });
 </script>
 
 <Draggable
@@ -83,7 +79,7 @@
     width: 2rem;
     height: 2rem;
     border-radius: 50%;
-    margin: 0.5rem;
+    margin: 0.25rem;
     box-sizing: border-box;
   }
   .moved {
@@ -95,5 +91,17 @@
     height: 0.5rem;
     border-radius: 50%;
     border-width: 2px;
+  }
+
+  @media (max-width: 768px) {
+    .checker {
+      width: 1rem;
+      height: 1rem;
+      margin: 0.05rem;
+    }
+    .moved {
+      width: 0.4rem;
+      height: 0.4rem;
+    }
   }
 </style>

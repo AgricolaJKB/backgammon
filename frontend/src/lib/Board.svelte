@@ -212,6 +212,10 @@
     width: 65%;
     height: 100%;
     float: left;
+
+    @media (max-width: 768px) {
+      width: 70%;
+    }
   }
 
   .side-area {
@@ -262,6 +266,11 @@
     max-height: 100%;
     background-color: darkgrey;
 
+    @media (max-width: 768px) {
+      width: 95vw;
+      height: 95dvh;
+    }
+
     &.black {
       transform: scale(-1);
     }
@@ -273,6 +282,12 @@
     background-color: white;
     margin: 2rem;
     display: flex;
+
+    @media (max-width: 768px) {
+      width: calc(100% - 2rem);
+      height: calc(50% - 1.5rem);
+      margin: 1rem;
+    }
 
     &.upper {
       top: 0;

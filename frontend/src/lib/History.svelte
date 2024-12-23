@@ -38,7 +38,6 @@
   const handleMouseEnter = (turn) => {
     lastViewedTurn = turn;
     const { state, moves, throw: _throw, player } = infoByTurn[turn];
-    console.log("info", infoByTurn[turn], turn);
 
     forcedPlayer = player;
     forcedTurn = turn + 1;

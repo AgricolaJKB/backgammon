@@ -14,18 +14,40 @@
   let left = 0;
   let top = 0;
 
+  let lastTouchX = 0;
+  let lastTouchY = 0;
+
   let moving = false;
 
-  function onMouseDown() {
+  function onMouseDown(e) {
+    console.log(e, "onMouseDown");
     if (deactivated) return;
     moving = true;
     dispatch("dragstart");
+    if (e.touches) {
+      lastTouchX = e.touches[0].screenX;
+      lastTouchY = e.touches[0].screenY;
+    }
   }
 
   function onMouseMove(e) {
-    if (moving) {
+    if (moving && !e.touches) {
       left += (invertX ? -1 : 1) * e.movementX;
       top += (invertY ? -1 : 1) * e.movementY;
+    } else if (moving && e.touches) {
+      const touch = e.touches[0];
+      if (lastTouchX !== 0 || lastTouchY !== 0) {
+        const deltaX = touch.screenX - lastTouchX;
+        const deltaY = touch.screenY - lastTouchY;
+        left += (invertX ? -1 : 1) * deltaX;
+        top += (invertY ? -1 : 1) * deltaY;
+      }
+      lastTouchX = touch.screenX;
+      lastTouchY = touch.screenY;
+
+      console.log(left, top);
+      e.stopPropagation();
+      e.preventDefault();
     }
     if (
       maxDrag &&
@@ -58,13 +80,15 @@
   bind:this={el}
   on:mousedown={onMouseDown}
   on:mouseup={onMouseUp}
+  on:touchstart={onMouseDown}
+  on:touchend={onMouseUp}
   style="transform: translate({left}px, {top}px)"
   class="draggable {deactivated && 'deactivated'} {moving && 'moving'}"
 >
   <slot></slot>
 </div>
 
-<svelte:window on:mousemove={onMouseMove} />
+<svelte:window on:mousemove={onMouseMove} on:touchmove={onMouseMove} />
 
 <style>
   .draggable {
