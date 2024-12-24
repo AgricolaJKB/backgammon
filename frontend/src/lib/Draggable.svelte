@@ -1,29 +1,48 @@
 <script>
-  import { createEventDispatcher } from "svelte";
+  /**
+   * @typedef {Object} Props
+   * @property {any} [maxDrag]
+   * @property {boolean} [resetAfterDrag]
+   * @property {boolean} [deactivated]
+   * @property {boolean} [invertX]
+   * @property {boolean} [invertY]
+   * @property {any} [el]
+   * @property {any} [id]
+   * @property {() => void} [onDragStart]
+   * @property {() => void} [onDragEnd]
+   * @property {() => void} [reset]
+   * @property {import('svelte').Snippet} [children]
+   */
 
-  const dispatch = createEventDispatcher();
+  /** @type {Props} */
+  let {
+    maxDrag = [Infinity, Infinity],
+    resetAfterDrag = false,
+    deactivated = false,
+    invertX = false,
+    invertY = false,
+    el = $bindable(),
+    id = null,
+    onDragStart = () => {},
+    onDragEnd = () => {},
+    reset = $bindable(() => {}),
+    children
+  } = $props();
 
-  export let maxDrag = [Infinity, Infinity];
-  export let resetAfterDrag = false;
-  export let deactivated = false;
-  export let invertX = false;
-  export let invertY = false;
-  export let el = null;
-  export let id = null;
-
-  let left = 0;
-  let top = 0;
+  let left = $state(0);
+  let top = $state(0);
 
   let lastTouchX = 0;
   let lastTouchY = 0;
 
-  let moving = false;
+  let moving = $state(false);
 
   function onMouseDown(e) {
     console.log(e, "onMouseDown");
     if (deactivated) return;
     moving = true;
-    dispatch("dragstart");
+    // dispatch("dragstart");
+    if (onDragStart) onDragStart();
     if (e.touches) {
       lastTouchX = e.touches[0].screenX;
       lastTouchY = e.touches[0].screenY;
@@ -62,14 +81,15 @@
 
   function onMouseUp() {
     moving = false;
-    dispatch("dragend");
+    // dispatch("dragend");
+    if (onDragEnd) onDragEnd();
     if (resetAfterDrag) {
       left = 0;
       top = 0;
     }
   }
 
-  export const reset = () => {
+  reset = () => {
     left = 0;
     top = 0;
   };
@@ -78,17 +98,19 @@
 <div
   {id}
   bind:this={el}
-  on:mousedown={onMouseDown}
-  on:mouseup={onMouseUp}
-  on:touchstart={onMouseDown}
-  on:touchend={onMouseUp}
+  role="button"
+  tabindex="0"
+  onmousedown={onMouseDown}
+  onmouseup={onMouseUp}
+  ontouchstart={onMouseDown}
+  ontouchend={onMouseUp}
   style="transform: translate({left}px, {top}px)"
   class="draggable {deactivated && 'deactivated'} {moving && 'moving'}"
 >
-  <slot></slot>
+  {@render children?.()}
 </div>
 
-<svelte:window on:mousemove={onMouseMove} on:touchmove={onMouseMove} />
+<svelte:window onmousemove={onMouseMove} ontouchmove={onMouseMove} />
 
 <style>
   .draggable {

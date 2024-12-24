@@ -1,8 +1,15 @@
 <script>
-  export let color;
-  export let reversed = false;
+  /**
+   * @typedef {Object} Props
+   * @property {any} color
+   * @property {boolean} [reversed]
+   */
 
-  let w, h;
+  /** @type {Props} */
+  let { color, reversed = false } = $props();
+
+  let w = $state(),
+    h = $state();
 </script>
 
 <div bind:clientWidth={w} bind:clientHeight={h} class="container">

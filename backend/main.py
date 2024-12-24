@@ -56,5 +56,5 @@ def add_moves(id: str, moves: List[Move]):
     player = conn.get_last_player() == "w" and "b" or "w"
     for move in moves:
         conn.add_move(id, turn, player, move.checker_id, move.start, move.end)
-    notify(id, conn.get_mail(conn.get_last_player()), moves)
+    # notify(id, conn.get_mail(conn.get_last_player()), moves)
     return "ok"

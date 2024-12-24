@@ -10,26 +10,25 @@
     user,
     gameId,
     onTheMove,
-    gameState,
+    gameState
   } from "../store.js";
   import { rollDices, insertMoves } from "../api.js";
 
-  export let forcedCheckerPositions;
+  let { forcedCheckerPositions = $bindable(null) } = $props();
 
-  let forcedTurn;
-  let forcedPlayer;
-  let forcedDices;
+  let forcedTurn = $state();
+  let forcedPlayer = $state();
+  let forcedDices = $state();
 
-  $: playerToDisplay = forcedPlayer || $currentPlayer;
-  $: turnToDisplay = forcedTurn || $currentTurn;
-  $: isForced = forcedPlayer && forcedTurn;
+  let playerToDisplay = $derived(forcedPlayer || $currentPlayer);
+  let turnToDisplay = $derived(forcedTurn || $currentTurn);
+  let isForced = $derived(forcedPlayer && forcedTurn);
 
-  let dices = $currentRoll;
+  let dices = $state([0, 0]);
 
-  $: {
+  $effect(() => {
     dices = forcedDices || $currentRoll;
-    console.log(dices, forcedDices);
-  }
+  });
 
   const roll = async () => {
     dices = await rollDices($gameId);
@@ -37,7 +36,7 @@
 
   const endTurn = async () => {
     const okay = await insertMoves($gameId, Object.values($moves));
-    $moves = {};
+    $moves = [];
   };
 </script>
 
@@ -63,10 +62,10 @@
       <span>Zieh die Würfel mit der Maus,<br />um zu würfeln</span>
     {/if}
     <Draggable
-      on:dragend={roll}
+      onDragEnd={roll}
       maxDrag={[150, 150]}
       resetAfterDrag
-      deactivated={dices[0] || !$onTheMove}
+      deactivated={!!dices[0] || !$onTheMove}
     >
       <div class="dices">
         <Dice number={dices[0]} />
@@ -77,7 +76,7 @@
 
   {#if dices[0] && dices[1] && $onTheMove}
     <div class="actions">
-      <button on:click={endTurn}>Zug beenden</button>
+      <button onclick={endTurn}>Zug beenden</button>
     </div>
   {/if}
 </div>

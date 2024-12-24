@@ -9,28 +9,7 @@
   import { onMount } from "svelte";
   import { getUsableDice } from "./utils.js";
 
-  $: forcedCheckerPositions = null;
-
-  let checkerPositions = init.reduce((acc, curr) => {
-    if (!acc[curr.position]) {
-      acc[curr.position] = [];
-    }
-    acc[curr.position].push({ id: curr.id, color: curr.color });
-    return acc;
-  }, {});
-
-  $: {
-    // move checkers to the right position
-    // initially and on server state change
-    const { moves } = $gameState || {};
-    if (moves) {
-      for (const move of moves) {
-        moveChecker(move.checker_id, move.start, move.end);
-      }
-    }
-  }
-
-  $: _checkerPositions = forcedCheckerPositions || checkerPositions;
+  let checkerPositions = $gameState?.board || {};
 
   const checkersById = init.reduce((acc, curr) => {
     acc[curr.id] = { id: curr.id, color: curr.color };
@@ -67,7 +46,7 @@
     }
   };
 
-  let containersCentroids;
+  let containersCentroids = $state();
 
   onMount(() => {
     containersCentroids = [
@@ -77,7 +56,7 @@
       return {
         x: left + width / 2,
         y: top + height / 2,
-        id: container.dataset.position
+        id: container?.dataset?.position
       };
     });
   });
@@ -133,6 +112,23 @@
     $moves = [...$moves, data];
     moveChecker(checker_id, start, end);
   };
+
+  let forcedCheckerPositions = $state(null);
+
+  // $effect(() => {
+  //   // move checkers to the right position
+  //   // initially and on server state change
+  //   const { moves } = $gameState || {};
+  //   if (moves) {
+  //     for (const move of moves) {
+  //       moveChecker(move.checker_id, move.start, move.end);
+  //     }
+  //   }
+  // });
+
+  let _checkerPositions = $derived(
+    forcedCheckerPositions || $gameState?.board || {}
+  );
 </script>
 
 <div class="side-area">
@@ -140,13 +136,13 @@
   <div class="hit-area">
     <span class="label">Geschlagen</span>
     <div class="boxes">
-      {#each ["white", "black"] as color, i}
+      {#each ["white", "black"] as color}
         <Box position={`hit-area-${color}`} {color} type="hit">
           {#each _checkerPositions[`hit-area-${color}`] || [] as checker}
             <Checker
               {...checker}
               position={`hit-area-${color}`}
-              on:move={updateCheckerPosition}
+              onMove={updateCheckerPosition}
             />
           {/each}
         </Box>
@@ -156,13 +152,13 @@
   <div class="out-area">
     <span class="label">Im Ziel</span>
     <div class="boxes">
-      {#each ["white", "black"] as color, i}
+      {#each ["white", "black"] as color}
         <Box position={`out-area-${color}`} {color} type="out">
           {#each _checkerPositions[`out-area-${color}`] || [] as checker}
             <Checker
               {...checker}
               position={`out-area-${color}`}
-              on:move={updateCheckerPosition}
+              onMove={updateCheckerPosition}
             />
           {/each}
         </Box>
@@ -190,7 +186,7 @@
                   <Checker
                     {...checker}
                     position={i + side * 12}
-                    on:move={updateCheckerPosition}
+                    onMove={updateCheckerPosition}
                   />
                 {/each}
               {/if}
@@ -212,8 +208,6 @@
   {/if}
 </div>
 <div class="moving-checker-cache"></div>
-
-<!-- <CheckerOverlay bind:addCheckerContainer></CheckerOverlay> -->
 
 <style lang="scss">
   .moving-checker-cache {

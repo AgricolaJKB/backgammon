@@ -1,12 +1,15 @@
 <script>
   import { onMount } from "svelte";
 
-  export let position;
-  export let color;
-  export let type;
+  let {
+    position,
+    color,
+    type,
+    children
+  } = $props();
 
-  let numberOfChildren;
-  let el;
+  let numberOfChildren = $state();
+  let el = $state();
 
   // check via el if there are children
   // update via mutation observer
@@ -25,7 +28,7 @@
   bind:this={el}
 >
   <span class="label {color}"></span>
-  <slot></slot>
+  {@render children()}
   {#if numberOfChildren > 1}
     <span class="bottom-info">+{numberOfChildren - 1}</span>
   {/if}

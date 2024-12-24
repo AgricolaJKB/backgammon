@@ -1,27 +1,41 @@
 <script>
-  import { createEventDispatcher, onMount } from "svelte";
+  import { onMount } from "svelte";
   import Draggable from "./Draggable.svelte";
 
   import { currentPlayer, onTheMove } from "../store.js";
 
-  export let id;
-  export let position;
-  export let color;
-  export let hasBeenMoved;
-  export let draggable = false;
+  /**
+   * @typedef {Object} Props
+   * @property {any} id
+   * @property {any} position
+   * @property {any} color
+   * @property {any} hasBeenMoved
+   * @property {boolean} [draggable]
+   * @property {(any) => void} [onMove]
+   */
 
-  const dispatch = createEventDispatcher();
+  /** @type {Props} */
+  let {
+    id,
+    position,
+    color,
+    hasBeenMoved,
+    draggable = $bindable(false),
+    onMove = () => {}
+  } = $props();
 
-  $: draggable = color === $currentPlayer && $onTheMove;
-
-  let checker;
+  let checker = $state();
   let cache;
-  let resetDrag = () => {};
+  let resetDrag = $state(() => {});
 
   let containerBeforeDrag;
 
   onMount(() => {
     cache = document.querySelector(".moving-checker-cache");
+  });
+
+  $effect(() => {
+    draggable = color === $currentPlayer && $onTheMove;
   });
 
   const onDragStart = () => {
@@ -38,11 +52,11 @@
   const onDragEnd = () => {
     const { left, top, width, height } = checker.getBoundingClientRect();
     const checkerCenter = { x: left + width / 2, y: top + height / 2 };
-    dispatch("move", {
+    onMove({
       checker_id: id,
       start: String(position),
       coordinates: checkerCenter,
-      reset: () => containerBeforeDrag.appendChild(checker),
+      reset: () => containerBeforeDrag.appendChild(checker)
     });
     resetDrag();
     cache.style.pointerEvents = "none";
@@ -53,8 +67,8 @@
 <Draggable
   {id}
   deactivated={!draggable}
-  on:dragstart={onDragStart}
-  on:dragend={onDragEnd}
+  {onDragStart}
+  {onDragEnd}
   bind:el={checker}
   bind:reset={resetDrag}
 >
@@ -68,7 +82,7 @@
       <div
         class="moved"
         style="background-color: {color === 'white' ? 'black' : 'white'}"
-      />
+      ></div>
     {/if}
   </div>
 </Draggable>

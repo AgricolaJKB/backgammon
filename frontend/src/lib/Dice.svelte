@@ -1,23 +1,23 @@
 <script>
-  export let number;
+  let { number } = $props();
 </script>
 
 <div class="dice">
   {#if number}
     {#if [1, 3, 5].includes(number)}
-      <div class="dot center" />
+      <div class="dot center"></div>
     {/if}
     {#if [2, 3, 4, 5, 6].includes(number)}
-      <div class="dot top-left" />
-      <div class="dot bottom-right" />
+      <div class="dot top-left"></div>
+      <div class="dot bottom-right"></div>
     {/if}
     {#if [4, 5, 6].includes(number)}
-      <div class="dot top-right" />
-      <div class="dot bottom-left" />
+      <div class="dot top-right"></div>
+      <div class="dot bottom-left"></div>
     {/if}
     {#if number === 6}
-      <div class="dot center-left" />
-      <div class="dot center-right" />
+      <div class="dot center-left"></div>
+      <div class="dot center-right"></div>
     {/if}
   {:else}
     <span>?</span>

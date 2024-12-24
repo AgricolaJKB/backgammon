@@ -1,16 +1,25 @@
 <!-- SLIDER COMPONENT -->
 
 <script>
-  import { createEventDispatcher } from "svelte";
+  /**
+   * @typedef {Object} Props
+   * @property {number} [min]
+   * @property {number} [max]
+   * @property {number} [step]
+   * @property {number} [value]
+   * @property {(value: { value: number }) => void} [onChange]
+   */
 
-  const dispatch = createEventDispatcher();
+  /** @type {Props} */
+  let {
+    min = 0,
+    max = 100,
+    step = 1,
+    value = $bindable(0),
+    onChange = () => {}
+  } = $props();
 
-  export let min = 0;
-  export let max = 100;
-  export let step = 1;
-  export let value = 0;
-
-  let slider;
+  let slider = $state();
   let dragging = false;
 
   function onMouseDown() {
@@ -23,7 +32,7 @@
       const x = e.clientX - rect.left;
       const percent = x / rect.width;
       value = min + percent * (max - min);
-      dispatch("change", { value });
+      onChange({ value });
     }
   }
 
@@ -35,9 +44,14 @@
 <div
   bind:this={slider}
   class="slider"
-  on:mousedown={onMouseDown}
-  on:mousemove={onMouseMove}
-  on:mouseup={onMouseUp}
+  onmousedown={onMouseDown}
+  onmousemove={onMouseMove}
+  onmouseup={onMouseUp}
+  role="slider"
+  tabindex="0"
+  aria-valuemin={min}
+  aria-valuemax={max}
+  aria-valuenow={value}
 >
   <div class="track"></div>
   <div class="thumb" style="left: {((value - min) / (max - min)) * 100}%"></div>
