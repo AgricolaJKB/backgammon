@@ -25,10 +25,7 @@
   } = $props();
 
   let checker = $state();
-  let cache;
-  let resetDrag = $state(() => {});
-
-  let containerBeforeDrag;
+  let cache = $state();
 
   onMount(() => {
     cache = document.querySelector(".moving-checker-cache");
@@ -38,40 +35,19 @@
     draggable = color === $currentPlayer && $onTheMove;
   });
 
-  const onDragStart = () => {
-    containerBeforeDrag = checker.parentElement;
-    const { left, top } = checker.getBoundingClientRect();
-    console.log("onDragStart", left, top, checker);
-    cache.appendChild(checker);
-    checker.style.position = "absolute";
-    checker.style.left = `${left}px`;
-    checker.style.top = `${top}px`;
-    cache.style.pointerEvents = "auto";
-  };
-
-  const onDragEnd = () => {
+  const onDragEnd = (reset) => {
     const { left, top, width, height } = checker.getBoundingClientRect();
     const checkerCenter = { x: left + width / 2, y: top + height / 2 };
     onMove({
       checker_id: id,
       start: String(position),
       coordinates: checkerCenter,
-      reset: () => containerBeforeDrag.appendChild(checker)
+      reset
     });
-    resetDrag();
-    cache.style.pointerEvents = "none";
-    checker.style.position = "static";
   };
 </script>
 
-<Draggable
-  {id}
-  deactivated={!draggable}
-  {onDragStart}
-  {onDragEnd}
-  bind:el={checker}
-  bind:reset={resetDrag}
->
+<Draggable {id} {cache} bind:el={checker} deactivated={!draggable} {onDragEnd}>
   <div
     class="checker {color}"
     style="background-color: {color}; border: {hasBeenMoved

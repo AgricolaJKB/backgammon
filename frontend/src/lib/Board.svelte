@@ -6,44 +6,67 @@
 
   import { moves, gameState, user, debug } from "../store.js";
   import init from "../initial.json";
-  import { onMount } from "svelte";
+  import { onMount, untrack } from "svelte";
   import { getUsableDice } from "./utils.js";
 
-  let checkerPositions = $gameState?.board || {};
+  let forcedCheckerPositions = $state(null);
+  let checkerPositions = $state(null);
+  let checkerPositionsWithMoves = $derived.by(() => {
+    if (!$moves) {
+      return checkerPositions;
+    }
+    const positions = { ...checkerPositions };
+    for (const move of $moves) {
+      const { checker_id, start, end } = move;
+      const checker = positions[start]?.find((c) => c.id === checker_id);
+      positions[start] = positions[start]?.filter((c) => c.id !== checker_id);
+      if (!positions[end]) {
+        positions[end] = [];
+      }
+      positions[end] = [...positions[end], checker];
+    }
+    return positions;
+  });
+  let _checkerPositions = $derived(
+    forcedCheckerPositions || checkerPositionsWithMoves || checkerPositions
+  );
+
+  $effect(() => {
+    if ($gameState?.board) {
+      checkerPositions = $gameState.board;
+    }
+  });
 
   const checkersById = init.reduce((acc, curr) => {
     acc[curr.id] = { id: curr.id, color: curr.color };
     return acc;
   }, {});
 
-  const moveChecker = (id, from, to) => {
+  const moveChecker = ({ checker_id: id, start, end, usedDice }) => {
     const checker = checkersById[id];
-    checkerPositions[from] = checkerPositions[from].filter(
-      (c) => c.id !== checker.id
-    );
-    if (!checkerPositions[to]) {
-      checkerPositions[to] = [];
+    if (
+      // case 1: move to empty position
+      !checkerPositionsWithMoves[end]?.length ||
+      // case 2: move to position with same color
+      checkerPositionsWithMoves[end][0].color === checker.color
+    ) {
+      $moves = [...$moves, { checker_id: id, start, end, usedDice }];
+      return true;
+    } else if (
+      // case 3: move to position with one checker of opposite color
+      checkerPositionsWithMoves[end].length === 1 &&
+      checkerPositionsWithMoves[end][0].color !== checker.color
+    ) {
+      moveChecker({
+        checker_id: checkerPositionsWithMoves[end][0].id,
+        start: end,
+        end: `hit-area-${checkerPositionsWithMoves[end][0].color}`,
+        usedDice: []
+      });
+      $moves = [...$moves, { checker_id: id, start, end, usedDice }];
+      return true;
     }
-    // case 1: move to empty position
-    if (!checkerPositions[to].length) {
-      checkerPositions[to].push(checker);
-      return;
-    }
-    // case 2: move to position with same color
-    if (checkerPositions[to][0].color === checker.color) {
-      checkerPositions[to].push(checker);
-      return;
-    }
-    // case 3: move to position with one checker of opposite color
-    if (checkerPositions[to].length === 1) {
-      moveChecker(
-        checkerPositions[to][0].id,
-        to,
-        `hit-area-${checkerPositions[to][0].color}`
-      );
-      checkerPositions[to].push(checker);
-      return;
-    }
+    return false;
   };
 
   let containersCentroids = $state();
@@ -77,8 +100,7 @@
     return closestContainer.id;
   };
 
-  const updateCheckerPosition = (e) => {
-    const { checker_id, start, coordinates, reset } = e.detail;
+  const updateCheckerPosition = ({ checker_id, start, coordinates, reset }) => {
     const checker = checkersById[checker_id];
     const end = getClosestContainer(coordinates);
     const dices = $gameState.throws[$gameState.throws.length - 1];
@@ -102,33 +124,17 @@
       reset();
       return;
     }
-    const data = {
+    const move = {
       checker_id,
       start,
       end,
       usedDice: usedDice
     };
-    // $moves = { ...$moves, [checker_id]: data };
-    $moves = [...$moves, data];
-    moveChecker(checker_id, start, end);
+    const success = moveChecker(move);
+    if (!success) {
+      reset();
+    }
   };
-
-  let forcedCheckerPositions = $state(null);
-
-  // $effect(() => {
-  //   // move checkers to the right position
-  //   // initially and on server state change
-  //   const { moves } = $gameState || {};
-  //   if (moves) {
-  //     for (const move of moves) {
-  //       moveChecker(move.checker_id, move.start, move.end);
-  //     }
-  //   }
-  // });
-
-  let _checkerPositions = $derived(
-    forcedCheckerPositions || $gameState?.board || {}
-  );
 </script>
 
 <div class="side-area">

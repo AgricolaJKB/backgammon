@@ -12,9 +12,12 @@
     onTheMove,
     gameState
   } from "../store.js";
+  import { onMount } from "svelte";
   import { rollDices, insertMoves } from "../api.js";
 
   let { forcedCheckerPositions = $bindable(null) } = $props();
+
+  let cache = $state();
 
   let forcedTurn = $state();
   let forcedPlayer = $state();
@@ -26,6 +29,10 @@
 
   let dices = $state([0, 0]);
 
+  onMount(() => {
+    cache = document.querySelector(".moving-checker-cache");
+  });
+
   $effect(() => {
     dices = forcedDices || $currentRoll;
   });
@@ -35,8 +42,17 @@
   };
 
   const endTurn = async () => {
-    const okay = await insertMoves($gameId, Object.values($moves));
-    $moves = [];
+    const okay = await insertMoves(
+      $gameId,
+      Object.values($moves).map((m) => {
+        // remove usedDice property
+        const { usedDice, ...rest } = m;
+        return rest;
+      })
+    );
+    if (okay === "ok") {
+      $moves = [];
+    }
   };
 </script>
 
@@ -64,9 +80,9 @@
     <Draggable
       onDragEnd={roll}
       maxDrag={[150, 150]}
-      resetAfterDrag
       deactivated={!!dices[0] || !$onTheMove}
     >
+      <!-- {cache} -->
       <div class="dices">
         <Dice number={dices[0]} />
         <Dice number={dices[1]} />

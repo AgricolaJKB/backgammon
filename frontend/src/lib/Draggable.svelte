@@ -2,47 +2,57 @@
   /**
    * @typedef {Object} Props
    * @property {any} [maxDrag]
-   * @property {boolean} [resetAfterDrag]
    * @property {boolean} [deactivated]
    * @property {boolean} [invertX]
    * @property {boolean} [invertY]
    * @property {any} [el]
    * @property {any} [id]
+   * @property {any} [cache]
    * @property {() => void} [onDragStart]
-   * @property {() => void} [onDragEnd]
-   * @property {() => void} [reset]
+   * @property {(any) => void} [onDragEnd]
    * @property {import('svelte').Snippet} [children]
    */
 
   /** @type {Props} */
   let {
     maxDrag = [Infinity, Infinity],
-    resetAfterDrag = false,
     deactivated = false,
     invertX = false,
     invertY = false,
     el = $bindable(),
     id = null,
+    cache = null,
     onDragStart = () => {},
     onDragEnd = () => {},
-    reset = $bindable(() => {}),
     children
   } = $props();
 
   let left = $state(0);
   let top = $state(0);
 
+  let initialLeft = $state();
+  let initialTop = $state();
+
   let lastTouchX = 0;
   let lastTouchY = 0;
+
+  let containerBeforeDrag = $state();
 
   let moving = $state(false);
 
   function onMouseDown(e) {
-    console.log(e, "onMouseDown");
     if (deactivated) return;
     moving = true;
-    // dispatch("dragstart");
-    if (onDragStart) onDragStart();
+    // if cache exists, append the element to it
+    if (cache) {
+      containerBeforeDrag = el.parentElement;
+      const { left, top } = el.getBoundingClientRect();
+      initialLeft = left;
+      initialTop = top;
+      cache.style.pointerEvents = "auto";
+      cache.appendChild(el);
+    }
+    onDragStart();
     if (e.touches) {
       lastTouchX = e.touches[0].screenX;
       lastTouchY = e.touches[0].screenY;
@@ -63,8 +73,6 @@
       }
       lastTouchX = touch.screenX;
       lastTouchY = touch.screenY;
-
-      console.log(left, top);
       e.stopPropagation();
       e.preventDefault();
     }
@@ -81,18 +89,33 @@
 
   function onMouseUp() {
     moving = false;
-    // dispatch("dragend");
-    if (onDragEnd) onDragEnd();
-    if (resetAfterDrag) {
-      left = 0;
-      top = 0;
+    onDragEnd(() => {
+      containerBeforeDrag.appendChild(el);
+    });
+    // remove the element from the cache
+    if (cache) {
+      cache.style.pointerEvents = "none";
+      // remove all elements from cache
+      cache.innerHTML = "";
+      try {
+        // containerBeforeDrag.appendChild(el);
+      } catch (e) {
+        // do nothing
+      }
     }
-  }
-
-  reset = () => {
     left = 0;
     top = 0;
-  };
+    initialLeft = 0;
+    initialTop = 0;
+  }
+
+  let style = $derived.by(() => {
+    if (!moving) return "";
+    if ((initialLeft || initialTop) && cache) {
+      return `transform: translate(${left}px, ${top}px); position: absolute; left: ${initialLeft}px; top: ${initialTop}px;`;
+    }
+    return `transform: translate(${left}px, ${top}px);`;
+  });
 </script>
 
 <div
@@ -104,7 +127,7 @@
   onmouseup={onMouseUp}
   ontouchstart={onMouseDown}
   ontouchend={onMouseUp}
-  style="transform: translate({left}px, {top}px)"
+  {style}
   class="draggable {deactivated && 'deactivated'} {moving && 'moving'}"
 >
   {@render children?.()}
@@ -114,6 +137,7 @@
 
 <style>
   .draggable {
+    z-index: 1000;
     cursor: pointer;
     &.deactivated {
       cursor: not-allowed;

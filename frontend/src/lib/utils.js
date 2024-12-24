@@ -7,7 +7,6 @@ export const numerisePosition = (position) => {
 };
 
 export const getUsableDice = ({ dices, usedDices, currentMove }) => {
-  console.log(dices, usedDices, currentMove);
   // Calculate dice options (doubles allow four moves)
   const allDices =
     dices[0] === dices[1] ? [dices[0], dices[0], dices[0], dices[0]] : dices;
