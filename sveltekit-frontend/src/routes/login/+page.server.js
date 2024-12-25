@@ -6,7 +6,7 @@ import * as auth from "$lib/server/auth";
 import { db } from "$lib/server/db";
 import * as table from "$lib/server/db/schema";
 
-import { sessionCookieName } from "$lib/server/auth";
+import { sessionCookieName, setSessionTokenCookie } from "$lib/server/auth";
 
 export const load = async (event) => {
   if (event.locals.user) {
@@ -22,10 +22,10 @@ export const actions = {
     const password = formData.get("password");
 
     if (!validateUsername(username)) {
-      return fail(400, { message: "Invalid username" });
+      return fail(400, { message: "Ungültiger Nutzer*innenname" });
     }
     if (!validatePassword(password)) {
-      return fail(400, { message: "Invalid password" });
+      return fail(400, { message: "Ungültiges Passwort" });
     }
 
     const results = await db
@@ -35,7 +35,10 @@ export const actions = {
 
     const existingUser = results.at(0);
     if (!existingUser) {
-      return fail(400, { message: "Incorrect username or password" });
+      return fail(400, {
+        message:
+          "Falscher Nutzer*innenname oder Passwort – hast du dich schon registriert?"
+      });
     }
 
     const validPassword = await verify(existingUser.passwordHash, password, {
@@ -45,7 +48,10 @@ export const actions = {
       parallelism: 1
     });
     if (!validPassword) {
-      return fail(400, { message: "Incorrect username or password" });
+      return fail(400, {
+        message:
+          "Falscher Nutzer*innenname oder Passwort – hast du dich schon registriert?"
+      });
     }
 
     const jwt = auth.generateJWT({
@@ -53,13 +59,11 @@ export const actions = {
       username: existingUser.username
     });
 
-    event.cookies.set(sessionCookieName, "Bearer " + jwt, {
-      httpOnly: true,
-      path: "/",
-      secure: true,
-      sameSite: "strict",
-      maxAge: 60 * 60 * 24 // 1 day
-    });
+    setSessionTokenCookie(
+      event,
+      "Bearer " + jwt,
+      new Date(Date.now() + 60 * 60 * 24)
+    );
 
     return redirect(302, "/");
   },
@@ -69,10 +73,10 @@ export const actions = {
     const password = formData.get("password");
 
     if (!validateUsername(username)) {
-      return fail(400, { message: "Invalid username" });
+      return fail(400, { message: "Ungültiger Nutzer*innenname" });
     }
     if (!validatePassword(password)) {
-      return fail(400, { message: "Invalid password" });
+      return fail(400, { message: "Ungültiges Passwort" });
     }
 
     const userId = generateUserId();
@@ -91,15 +95,14 @@ export const actions = {
 
       const jwt = auth.generateJWT({ userId, username });
 
-      event.cookies.set(sessionCookieName, "Bearer " + jwt, {
-        httpOnly: true,
-        path: "/",
-        secure: true,
-        sameSite: "strict",
-        maxAge: 60 * 60 * 24 // 1 day
-      });
+      setSessionTokenCookie(
+        event,
+        "Bearer " + jwt,
+        new Date(Date.now() + 60 * 60 * 24)
+      );
     } catch (e) {
-      return fail(500, { message: "An error has occurred" });
+      console.log(e);
+      return fail(500, { message: "Das hat nicht geklappt" });
     }
     return redirect(302, "/");
   }
