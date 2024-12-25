@@ -1,10 +1,14 @@
 # Description: Makefile for backend
 
 # install venv and dependencies
-.PHONY: setup
-setup:
+.PHONY: setup_python
+setup_python:
 	python3 -m venv venv
 	. venv/bin/activate && pip3 install -r requirements.txt &&	deactivate
+
+.PHONY: setup_db
+setup_db:
+	sh scripts/setup_db.sh
 
 # run the backend
 .PHONY: run
