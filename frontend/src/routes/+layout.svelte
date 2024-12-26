@@ -1,6 +1,5 @@
 <script>
   let { children } = $props();
-  console.log(children, "children");
 </script>
 
 <div id="app">

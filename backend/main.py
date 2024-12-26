@@ -8,10 +8,10 @@ import os
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
 
-from connector import Connector
-from models import Move
-from utils import roll_dice, get_player
-from mail import notify
+from lib.connector import Connector
+from lib.models import Move
+from lib.utils import roll_dice, get_player
+from lib.mail import notify
 
 origins = ["http://localhost", "http://localhost:5173", "https://agricolajkb.github.io"]
 

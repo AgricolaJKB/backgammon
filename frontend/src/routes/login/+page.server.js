@@ -127,7 +127,7 @@ function validateUsername(username) {
 function validatePassword(password) {
   return (
     typeof password === "string" &&
-    password.length >= 6 &&
+    password.length >= 3 &&
     password.length <= 255
   );
 }

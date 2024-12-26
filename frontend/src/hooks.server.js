@@ -11,10 +11,16 @@ const handleAuth = async ({ event, resolve }) => {
   const headers = event.request.headers;
   const cookies = parse(headers.get("cookie") || "");
 
+  if (!cookies.AuthorizationToken) {
+    event.locals.user = null;
+    event.locals.session = null;
+    return resolve(event);
+  }
+
   try {
-    if (!cookies.AuthorizationToken) {
-      throw new Error("No token");
-    }
+    // if (!cookies.AuthorizationToken) {
+    //   throw new Error("No token");
+    // }
 
     const token = decodeURIComponent(cookies.AuthorizationToken).replace(
       "Bearer ",
