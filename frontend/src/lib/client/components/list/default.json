@@ -1,0 +1,68 @@
+[
+  {
+    "gameId": 1,
+    "players": [
+      {
+        "id": "b4wybt3hhpj65dxuolcpmmda",
+        "username": "jakob",
+        "color": "white"
+      },
+      {
+        "id": "fletppfn5qezjmdeqw7efbqp",
+        "username": "kaspar",
+        "color": "black"
+      }
+    ],
+    "status": "running",
+    "turn": 1,
+    "currentPlayer": "white",
+    "lastUpdate": "2024-12-26T10:00:00.000Z",
+    "dices": [1, 2],
+    "rolled": false,
+    "board": [
+      { "id": 0, "color": "white", "count": 2 },
+      { "id": 5, "color": "white", "count": 5 },
+      { "id": 7, "color": "white", "count": 3 },
+      { "id": 11, "color": "white", "count": 5 },
+      { "id": 12, "color": "black", "count": 5 },
+      { "id": 16, "color": "black", "count": 3 },
+      { "id": 18, "color": "black", "count": 5 },
+      { "id": 23, "color ": "black", "count": 2 }
+    ],
+    "history": [],
+    "uncommittedMoves": []
+  },
+  {
+    "gameId": 2,
+    "players": [
+      {
+        "id": "tbujaebmrdywbksb5q6mtntx",
+        "username": "bauer",
+        "color": "white"
+      },
+      {
+        "id": "b4wybt3hhpj65dxuolcpmmda",
+        "username": "jakob",
+        "color": "black"
+      }
+    ],
+    "status": "running",
+    "turn": 1,
+    "currentPlayer": "white",
+    "dices": [1, 2],
+    "lastUpdate": "2024-12-26T08:00:00.000Z",
+    "rolled": false,
+    "board": [
+      { "id": 0, "color": "white", "count": 2 },
+      { "id": 5, "color": "white", "count": 5 },
+      { "id": 7, "color": "white", "count": 3 },
+      { "id": 11, "color": "white", "count": 5 },
+      { "id": 12, "color": "black", "count": 5 },
+      { "id": 16, "color": "black", "count": 3 },
+      { "id": 18, "color": "black", "count": 5 },
+      { "id": 23, "color": "black", "count": 2 }
+    ],
+    "history": [],
+    "uncommittedMoves": []
+  }
+]

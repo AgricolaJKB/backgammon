@@ -1,12 +1,10 @@
 <script>
-  import "./app.css";
-
   import Triangle from "./components/Triangle.svelte";
   import Checker from "./components/Checker.svelte";
   import SideBoard from "./components/SideBoard.svelte";
   import Box from "./components/Box.svelte";
 
-  import { moves, gameState, user, debug } from "./store.js";
+  import { moves, gameState, user, debug, gameId } from "./store.js";
   import init from "./initial.json";
   import { onMount, untrack } from "svelte";
   import { getUsableDice } from "./utils.js";
@@ -139,81 +137,83 @@
   };
 </script>
 
-<div class="side-area">
-  <SideBoard bind:forcedCheckerPositions />
-  <div class="hit-area">
-    <span class="label">Geschlagen</span>
-    <div class="boxes">
-      {#each ["white", "black"] as color}
-        <Box position={`hit-area-${color}`} {color} type="hit">
-          {#each _checkerPositions[`hit-area-${color}`] || [] as checker}
-            <Checker
-              {...checker}
-              position={`hit-area-${color}`}
-              onMove={updateCheckerPosition}
-            />
-          {/each}
-        </Box>
-      {/each}
-    </div>
-  </div>
-  <div class="out-area">
-    <span class="label">Im Ziel</span>
-    <div class="boxes">
-      {#each ["white", "black"] as color}
-        <Box position={`out-area-${color}`} {color} type="out">
-          {#each _checkerPositions[`out-area-${color}`] || [] as checker}
-            <Checker
-              {...checker}
-              position={`out-area-${color}`}
-              onMove={updateCheckerPosition}
-            />
-          {/each}
-        </Box>
-      {/each}
-    </div>
-  </div>
-</div>
-<div class="main-area">
-  <!-- 1 board, 2 sides, 12 triangles per side  -->
-  <div class="board {$user}">
-    {#each Array.from({ length: 2 }) as _, side}
-      <div class="side {side === 0 ? 'upper' : 'lower'}">
-        {#each Array.from({ length: 12 }) as _, i}
-          <div class="triangle root-triangle" style="width: {100 / 12}%">
-            <Triangle
-              color={i % 2 === 0 ? "darkgrey" : "grey"}
-              reversed={side === 0}
-            />
-            <div
-              class="checkerContainer {side === 1 && 'reversed'} "
-              data-position={i + side * 12}
-            >
-              {#if _checkerPositions[i + side * 12]}
-                {#each _checkerPositions[i + side * 12] as checker}
-                  <Checker
-                    {...checker}
-                    position={i + side * 12}
-                    onMove={updateCheckerPosition}
-                  />
-                {/each}
-              {/if}
-            </div>
-          </div>
+<div class="backgammon">
+  <div class="side-area">
+    <SideBoard bind:forcedCheckerPositions />
+    <div class="hit-area">
+      <span class="label">Geschlagen</span>
+      <div class="boxes">
+        {#each ["white", "black"] as color}
+          <Box position={`hit-area-${color}`} {color} type="hit">
+            {#each _checkerPositions[`hit-area-${color}`] || [] as checker}
+              <Checker
+                {...checker}
+                position={`hit-area-${color}`}
+                onMove={updateCheckerPosition}
+              />
+            {/each}
+          </Box>
         {/each}
       </div>
-    {/each}
-  </div>
-  {#if containersCentroids && $debug}
-    {#each containersCentroids as { x, y, id }, i}
-      <div
-        class="marker"
-        style="position: fixed; top: {y}px; left: {x}px; color: white; pointer-events: none"
-      >
-        {id}
+    </div>
+    <div class="out-area">
+      <span class="label">Im Ziel</span>
+      <div class="boxes">
+        {#each ["white", "black"] as color}
+          <Box position={`out-area-${color}`} {color} type="out">
+            {#each _checkerPositions[`out-area-${color}`] || [] as checker}
+              <Checker
+                {...checker}
+                position={`out-area-${color}`}
+                onMove={updateCheckerPosition}
+              />
+            {/each}
+          </Box>
+        {/each}
       </div>
-    {/each}
-  {/if}
+    </div>
+  </div>
+  <div class="main-area">
+    <!-- 1 board, 2 sides, 12 triangles per side  -->
+    <div class="board {$user}">
+      {#each Array.from({ length: 2 }) as _, side}
+        <div class="side {side === 0 ? 'upper' : 'lower'}">
+          {#each Array.from({ length: 12 }) as _, i}
+            <div class="triangle root-triangle" style="width: {100 / 12}%">
+              <Triangle
+                color={i % 2 === 0 ? "darkgrey" : "grey"}
+                reversed={side === 0}
+              />
+              <div
+                class="checkerContainer {side === 1 && 'reversed'} "
+                data-position={i + side * 12}
+              >
+                {#if _checkerPositions[i + side * 12]}
+                  {#each _checkerPositions[i + side * 12] as checker}
+                    <Checker
+                      {...checker}
+                      position={i + side * 12}
+                      onMove={updateCheckerPosition}
+                    />
+                  {/each}
+                {/if}
+              </div>
+            </div>
+          {/each}
+        </div>
+      {/each}
+    </div>
+    {#if containersCentroids && $debug}
+      {#each containersCentroids as { x, y, id }, i}
+        <div
+          class="marker"
+          style="position: fixed; top: {y}px; left: {x}px; color: white; pointer-events: none"
+        >
+          {id}
+        </div>
+      {/each}
+    {/if}
+  </div>
 </div>
 <div class="moving-checker-cache"></div>
 
@@ -225,6 +225,14 @@
     width: 100%;
     height: 100%;
     pointer-events: none;
+  }
+
+  .backgammon {
+    height: calc(100dvh - 7rem);
+    max-height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
   }
   .main-area {
     width: 65%;
@@ -238,7 +246,7 @@
 
   .side-area {
     width: 25%;
-    height: 90dvh;
+    height: 100%;
     max-height: 100%;
     float: right;
     align-self: flex-start;

@@ -58,8 +58,10 @@ const user = readable(null, (set, update) => {
 });
 
 const gameId = readable(null, (set, update) => {
-  // const gameId = url.pathname.split("/")[1] || "test";
-  const gameId = getUrlParam("game") || "test";
+  if (typeof window === "undefined") return null;
+  const url = new URL(window.location.href);
+  const gameId = url.pathname.split("/")[1] || "test";
+  // const gameId = getUrlParam("game") || "test";
   set(gameId);
 });
 

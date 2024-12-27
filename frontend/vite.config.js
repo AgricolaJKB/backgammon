@@ -8,7 +8,9 @@ export default defineConfig({
       // if using SCSS
       scss: {
         additionalData: `
-                @use '$lib/client/scss/colors' as *;    
+                @use '$lib/client/scss/colors' as *;
+                @use '$lib/client/scss/typography' as *;    
+
             `
       }
     }

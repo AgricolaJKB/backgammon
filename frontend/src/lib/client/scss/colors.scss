@@ -1,6 +1,14 @@
+@use "sass:color";
+
 $lightgray: #9699a5;
+$middlegray: #6b6b6e;
 $darkgray: #3b3940;
 $black: #000000;
 $white: #ffffff;
 $highlight: #a66558;
 $alarm: #a21010;
+
+$text-primary: $darkgray;
+$text-secondary: color.adjust($darkgray, $lightness: 20%);
+$background-primary: color.adjust($darkgray, $lightness: 72.5%);
+$background-secondary: color.adjust($darkgray, $lightness: 80%);

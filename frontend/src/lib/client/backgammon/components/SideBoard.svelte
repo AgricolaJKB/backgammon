@@ -1,4 +1,5 @@
 <script>
+  import Button from "$lib/client/components/button/index.svelte";
   import Dice from "./Dice.svelte";
   import Draggable from "./Draggable.svelte";
   import History from "./History.svelte";
@@ -92,7 +93,7 @@
 
   {#if dices[0] && dices[1] && $onTheMove}
     <div class="actions">
-      <button onclick={endTurn}>Zug beenden</button>
+      <Button onclick={endTurn}>Zug beenden</Button>
     </div>
   {/if}
 </div>

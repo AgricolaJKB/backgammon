@@ -1,12 +1,75 @@
 <script>
+  import House from "$lib/client/assets/house-solid.svg.svelte";
+  import Logout from "$lib/client/assets/right-to-bracket.svg.svelte";
+  import { page } from "$app/state";
+  import { enhance } from "$app/forms";
+
+  console.log(page.data);
   let { children } = $props();
 </script>
 
+{#if page.route.id !== "/login"}
+  <header>
+    <div class="left">{page?.data?.user?.username}</div>
+    <div class="right">
+      {#if page.route.id === "/"}
+        <div class="by">
+          <form method="post" action="/?/logout" use:enhance>
+            <button><Logout /></button>
+          </form>
+        </div>
+      {:else}
+        <a href="/" title="Home">
+          <House />
+        </a>
+      {/if}
+    </div>
+  </header>
+{/if}
 <div id="app">
   {@render children()}
 </div>
 
 <style lang="scss">
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    // background-color: #f9f9f9;
+    // border-bottom: 1px solid #e0e0e0;
+
+    .left {
+      @include font-l;
+    }
+
+    .right {
+      width: 1.5rem;
+      height: 1.5rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: background-color 0.25s;
+
+      .by,
+      a,
+      form,
+      button,
+      svg {
+        width: 100%;
+        height: 100%;
+      }
+
+      &:hover {
+        path {
+          fill: #f9f9f9;
+        }
+      }
+    }
+  }
+
   :root {
     font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
     line-height: 1.5;
@@ -37,7 +100,7 @@
     body {
       width: 100%;
       margin: 0;
-      display: flex;
+      // display: flex;
       //   place-items: center;
       min-width: 320px;
       min-height: 100vh;
@@ -62,33 +125,10 @@
     }
 
     button {
-      border-radius: 8px;
-      border: 1px solid transparent;
-      padding: 0.6em 1.2em;
-      font-size: 1em;
-      font-weight: 500;
-      font-family: inherit;
-      background-color: #1a1a1a;
-      background-color: #f9f9f9;
-
+      padding: 0;
+      border: none;
       cursor: pointer;
-      transition: border-color 0.25s;
-    }
-    button:hover {
-      /* border-color: #646cff; */
-      border-color: #1f1f1f;
-    }
-    button:focus {
-      outline: 4px auto -webkit-focus-ring-color;
-    }
-    button:focus-visible {
-      outline: 4px auto -webkit-focus-ring-color;
-    }
-
-    button.primary {
-      //   background-color: #646cff;
-      background-color: #4a574c;
-      color: #ffffff;
+      background-color: transparent;
     }
   }
 
@@ -104,7 +144,7 @@
         /* color:  */
       }
       button {
-        background-color: #f9f9f9;
+        // background-color: #f9f9f9;
       }
     }
   }

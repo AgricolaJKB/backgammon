@@ -1,4 +1,5 @@
 <script>
+  import Button from "$lib/client/components/button/index.svelte";
   import { enhance } from "$app/forms";
 
   let { form } = $props();
@@ -17,8 +18,8 @@
     </label>
     <p class="alarm">{form?.message ? `🚨 ${form?.message} 🚨` : ""}</p>
     <div class="controls">
-      <button class="primary">Einloggen</button>
-      <button formaction="?/register">Registrieren</button>
+      <Button class="primary">Einloggen</Button>
+      <Button formaction="?/register">Registrieren</Button>
     </div>
   </form>
 </div>
