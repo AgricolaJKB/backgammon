@@ -1,13 +1,15 @@
 <script>
   import Entry from "./Entry.svelte";
 
-  import backupData from "./default.json";
+  import { getTestData } from "./default.js";
 
   const { data, user } = $props();
+
+  const testData = $derived(getTestData(user));
 </script>
 
 <ul>
-  {#each data || backupData as game}
+  {#each data || testData || [] as game}
     <li>
       <a href={`${game.gameId}`}>
         <Entry {...game} {user} />

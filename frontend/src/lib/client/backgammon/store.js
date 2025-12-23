@@ -40,85 +40,56 @@ const getBoardHistory = (moves) => {
   return boardHistory;
 };
 
-const getUrlParam = (param) => {
-  if (typeof window === "undefined") return null;
-  const url = new URL(window.location.href);
-  return url.searchParams.get(param);
-};
+const debug = writable(false);
 
-const debug = readable(false, (set) => {
-  const debug = getUrlParam("debug");
-  set(debug === "true");
-});
+const userColor = writable(null);
 
-const user = readable(null, (set, update) => {
-  // const user = url.pathname.split("/")[2] || "white";
-  const user = getUrlParam("user") || "white";
-  set(user);
-});
-
-const gameId = readable(null, (set, update) => {
-  if (typeof window === "undefined") return null;
-  const url = new URL(window.location.href);
-  const gameId = url.pathname.split("/")[1] || "test";
-  // const gameId = getUrlParam("game") || "test";
-  set(gameId);
-});
+const gameId = writable(null);
 
 // const moves = writable({});
 const moves = writable([]);
 
 // server game state
-let lastState = null;
-const gameState = readable(null, (set, update) => {
-  const gameId = getUrlParam("game") || "test";
-  const interval = setInterval(async () => {
-    const state = await getGameState(gameId);
-    if (JSON.stringify(state) === lastState) return;
-    const board = getBoardState(state.moves);
-    const history = getBoardHistory(state.moves);
-    set({ ...state, board, history });
-    lastState = JSON.stringify(state);
-  }, 1000);
-  return () => clearInterval(interval);
-});
+const gameState = writable(null);
 
-const currentPlayer = derived(gameState, ($gameState) => {
-  if (!$gameState) return null;
-  const lastPlayer =
-    $gameState.moves[$gameState.moves.length - 1]?.player || "b";
-  return lastPlayer === "w" ? "black" : "white";
+const currentPlayerColor = derived(gameState, ($gameState) => {
+  if (!$gameState) return "white";
+  const lastRoll = $gameState.throws[$gameState.throws.length - 1];
+  return lastRoll?.player || "white";
 });
 
 const currentTurn = derived(gameState, ($gameState) => {
   if (!$gameState) return 1;
-  const lastTurn = $gameState.moves[$gameState.moves.length - 1];
   const lastRoll = $gameState.throws[$gameState.throws.length - 1];
-  if (lastTurn && lastTurn.turn === lastRoll.turn) return lastRoll.turn + 1;
   return lastRoll?.turn || 1;
 });
 
 const currentRoll = derived(gameState, ($gameState) => {
   if (!$gameState) return [null, null];
-  const lastTurn = $gameState.moves[$gameState.moves.length - 1];
   const lastRoll = $gameState.throws[$gameState.throws.length - 1];
-  if (lastTurn && lastTurn.turn === lastRoll.turn) return [null, null];
   return [lastRoll?.dice1 || null, lastRoll?.dice2 || null];
 });
 
 const onTheMove = derived(
-  [currentPlayer, user],
-  ([$currentPlayer, $user]) => $currentPlayer === $user
+  [currentPlayerColor, userColor],
+  ([$currentPlayerColor, $userColor]) => $currentPlayerColor === $userColor
 );
 
 export {
   gameState,
-  currentPlayer,
+  currentPlayerColor,
   currentRoll,
   currentTurn,
   moves,
-  user,
+  userColor,
   gameId,
   debug,
-  onTheMove
+  onTheMove,
+  updateGameState
+};
+
+export const updateGameState = (state) => {
+  const board = getBoardState(state.moves);
+  const history = getBoardHistory(state.moves);
+  gameState.set({ ...state, board, history });
 };

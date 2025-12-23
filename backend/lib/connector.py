@@ -1,5 +1,7 @@
-import pandas as pd
+import sqlite3
 import time
+
+DB_PATH = "db/database.db"
 
 
 # get human readable timestamp
@@ -10,63 +12,102 @@ def get_timestamp():
 class Connector:
     def __init__(self, id):
         self.id = id
-        self.moves = pd.read_csv("db/moves.csv")
-        self.throws = pd.read_csv("db/throws.csv")
-        self.players = pd.read_csv("db/players.csv")
+        self.conn = sqlite3.connect(DB_PATH, check_same_thread=False)
+        self.conn.row_factory = sqlite3.Row
 
-        self.moves = self.moves[self.moves["id"] == id]
-        self.throws = self.throws[self.throws["id"] == id]
-        self.players = self.players[self.players["id"] == id]
+    def __del__(self):
+        if hasattr(self, "conn"):
+            self.conn.close()
 
     def get(self):
+        cursor = self.conn.cursor()
+
+        cursor.execute(
+            """
+            SELECT 
+                game_id as id, 
+                turn_number as turn, 
+                player_color as player, 
+                checker_id, 
+                from_pos as start, 
+                to_pos as end, 
+                moved_at as timestamp 
+            FROM moves 
+            WHERE game_id = ?
+            """,
+            (self.id,),
+        )
+        moves = [dict(row) for row in cursor.fetchall()]
+
+        cursor.execute(
+            """
+            SELECT 
+                game_id as id, 
+                turn_number as turn, 
+                player_color as player, 
+                die_1 as dice1, 
+                die_2 as dice2, 
+                rolled_at as timestamp 
+            FROM dice_rolls 
+            WHERE game_id = ?
+            """,
+            (self.id,),
+        )
+        throws = [dict(row) for row in cursor.fetchall()]
+
         return {
-            "moves": self.moves.to_dict(orient="records"),
-            "throws": self.throws.to_dict(orient="records"),
+            "moves": moves,
+            "throws": throws,
         }
 
     def get_last_player(self):
-        if self.moves.empty:
-            return None
-        return self.moves.iloc[-1]["player"]
+        cursor = self.conn.cursor()
+        cursor.execute(
+            "SELECT player_color FROM moves WHERE game_id = ? ORDER BY id DESC LIMIT 1",
+            (self.id,),
+        )
+        row = cursor.fetchone()
+        if row:
+            return row["player_color"]
+        return None
 
     def get_last_turn(self):
-        if self.moves.empty:
-            return 0
-        return self.moves.iloc[-1]["turn"]
+        cursor = self.conn.cursor()
+        cursor.execute(
+            "SELECT turn_number FROM moves WHERE game_id = ? ORDER BY id DESC LIMIT 1",
+            (self.id,),
+        )
+        row = cursor.fetchone()
+        if row:
+            return row["turn_number"]
+        return 0
 
     def add_move(self, id, turn, player, checker_id, start, end):
-        self.moves = self.moves._append(
-            {
-                "id": id,
-                "turn": turn,
-                "player": player,
-                "checker_id": checker_id,
-                "start": start,
-                "end": end,
-                "timestamp": get_timestamp(),
-            },
-            ignore_index=True,
+        cursor = self.conn.cursor()
+        cursor.execute(
+            """
+            INSERT INTO moves (game_id, turn_number, player_color, checker_id, from_pos, to_pos, moved_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """,
+            (id, turn, player, checker_id, start, end, get_timestamp()),
         )
-        self.moves.to_csv("db/moves.csv", index=False)
+        self.conn.commit()
 
     def add_throw(self, id, turn, player, dice1, dice2):
+        cursor = self.conn.cursor()
         # check if already exists
-        if not self.throws[
-            (self.throws["id"] == id) & (self.throws["turn"] == turn)
-        ].empty:
-            return
-        self.throws = self.throws._append(
-            {
-                "id": id,
-                "turn": turn,
-                "player": player,
-                "dice1": dice1,
-                "dice2": dice2,
-                "timestamp": get_timestamp(),
-            },
-            ignore_index=True,
+        cursor.execute(
+            "SELECT 1 FROM dice_rolls WHERE game_id = ? AND turn_number = ?", (id, turn)
         )
-        self.throws.to_csv("db/throws.csv", index=False)
+        if cursor.fetchone():
+            return
 
-    def get_mail(self, player):
-        return self.players[self.players["player"] == player]["mail"].values[0]
+        cursor.execute(
+            """
+            INSERT INTO dice_rolls (game_id, turn_number, player_color, die_1, die_2, rolled_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """,
+            (id, turn, player, dice1, dice2, get_timestamp()),
+        )
+        self.conn.commit()
+

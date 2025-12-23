@@ -18,10 +18,6 @@ const handleAuth = async ({ event, resolve }) => {
   }
 
   try {
-    // if (!cookies.AuthorizationToken) {
-    //   throw new Error("No token");
-    // }
-
     const token = decodeURIComponent(cookies.AuthorizationToken).replace(
       "Bearer ",
       ""

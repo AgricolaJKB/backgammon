@@ -1,5 +1,5 @@
-const DEV_BACKEND_URL = "http://localhost:8000";
-const PROD_BACKEND_URL = "https://agricola.uber.space/backgammon/backend";
+const DEV_BACKEND_URL = "/api/games";
+const PROD_BACKEND_URL = "/api/games";
 
 const backend_url = import.meta.env.PROD ? PROD_BACKEND_URL : DEV_BACKEND_URL;
 
@@ -24,7 +24,7 @@ const insertMoves = async (id = "test", moves) => {
     },
     body: JSON.stringify(moves),
   });
-  const status = await response.text();
+  const status = await response.json();
   return status;
 };
 
