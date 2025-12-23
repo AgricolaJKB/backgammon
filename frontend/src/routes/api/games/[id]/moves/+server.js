@@ -41,9 +41,9 @@ export async function POST({ params, request, locals }) {
       gameId: id,
       turnNumber: turn,
       playerColor: player,
-      checkerId: move.checker_id,
-      fromPos: move.start,
-      toPos: move.end
+      checkerId: move.checkerId,
+      fromPos: move.fromPos,
+      toPos: move.toPos
     });
   }
 

@@ -36,21 +36,21 @@ export const load = async ({ params, locals }) => {
 
   const formattedMoves = gameMoves.map(m => ({
     id: m.id,
-    turn: m.turnNumber,
-    player: m.playerColor,
-    checker_id: m.checkerId,
-    start: m.fromPos,
-    end: m.toPos,
-    timestamp: m.createdAt
+    turnNumber: m.turnNumber,
+    playerColor: m.playerColor,
+    checkerId: m.checkerId,
+    fromPos: m.fromPos,
+    toPos: m.toPos,
+    createdAt: m.createdAt
   }));
 
   const formattedRolls = gameRolls.map(r => ({
     id: r.id,
-    turn: r.turnNumber,
-    player: r.playerColor,
+    turnNumber: r.turnNumber,
+    playerColor: r.playerColor,
     dice1: r.dice1,
     dice2: r.dice2,
-    timestamp: r.createdAt
+    createdAt: r.createdAt
   }));
 
   return {
@@ -58,7 +58,7 @@ export const load = async ({ params, locals }) => {
     userColor,
     initialGameState: {
       moves: formattedMoves,
-      throws: formattedRolls
+      diceRolls: formattedRolls
     }
   };
 };

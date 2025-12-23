@@ -1,8 +1,8 @@
 <script>
-    import {onMount} from 'svelte';
+    import {onMount, getContext} from 'svelte';
     import Draggable from './Draggable.svelte';
 
-    import {currentPlayerColor, onTheMove} from '../store.js';
+    const game = getContext('game');
 
     /**
      * @typedef {Object} Props
@@ -28,38 +28,21 @@
         receive,
     } = $props();
 
-    let checker = $state();
-    let cache = $state();
-
-    onMount(() => {
-        cache = document.querySelector('.moving-checker-cache');
-    });
-
     $effect(() => {
-        draggable = color === $currentPlayerColor && $onTheMove;
+        draggable = color === game.currentPlayerColor && game.onTheMove;
     });
 
-    const onDragEnd = (reset) => {
-        const {left, top, width, height} = checker.getBoundingClientRect();
-        const checkerCenter = {x: left + width / 2, y: top + height / 2};
+    const onDragEnd = ({coordinates, reset}) => {
         onMove({
-            checker_id: id,
-            start: String(position),
-            coordinates: checkerCenter,
+            checkerId: id,
+            fromPos: String(position),
+            coordinates,
             reset,
         });
     };
 </script>
 
-<Draggable
-    {id}
-    {send}
-    {receive}
-    {cache}
-    bind:el={checker}
-    deactivated={!draggable}
-    {onDragEnd}
->
+<Draggable {id} {send} {receive} deactivated={!draggable} {onDragEnd}>
     <div
         class="checker {color}"
         style="background-color: {color}; border: {hasBeenMoved

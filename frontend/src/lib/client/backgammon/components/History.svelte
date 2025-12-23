@@ -1,6 +1,8 @@
 <script>
-    import {currentTurn, gameState, moves} from '../store.js';
+    import {getContext} from 'svelte';
     import initial from '../initial.json';
+
+    const game = getContext('game');
 
     let {
         forcedCheckerPositions = $bindable(),
@@ -12,39 +14,25 @@
     let infoByTurn = $state([]);
 
     $effect(() => {
-        infoByTurn = Array.from({length: $currentTurn - 1}, (_, i) => {
-            const movesBefore = $gameState.moves.filter((m) => m.turn < i + 1);
-            const stateBefore = initial.map((t) => {
-                const lastMove = movesBefore
-                    .reverse()
-                    .find((m) => m.checker_id === t.id);
-                if (lastMove) {
-                    return {
-                        ...t,
-                        position: lastMove.end,
-                    };
-                }
-                return t;
-            });
+        infoByTurn = Array.from({length: game.currentTurn - 1}, (_, i) => {
             return {
-                state: stateBefore,
-                moves: $gameState.moves.filter((m) => m.turn === i + 1),
-                throw: $gameState.throws.find((t) => t.turn === i + 1),
-                player: i % 2 === 0 ? 'white' : 'black',
+                moves: game.serverMoves.filter((m) => m.turnNumber === i + 1),
+                throw: game.diceRolls.find((t) => t.turnNumber === i + 1),
+                playerColor: i % 2 === 0 ? 'white' : 'black',
             };
         });
     });
 
     let lastViewedTurn;
 
-    const handleMouseEnter = (turn) => {
-        lastViewedTurn = turn;
-        const {state, moves, throw: _throw, player} = infoByTurn[turn];
+    const handleMouseEnter = (turnNumber) => {
+        lastViewedTurn = turnNumber;
+        const {moves, throw: _throw, playerColor} = infoByTurn[turnNumber];
 
-        forcedPlayerColor = player;
-        forcedTurn = turn + 1;
+        forcedPlayerColor = playerColor;
+        forcedTurn = turnNumber + 1;
         forcedDices = [_throw.dice1, _throw.dice2];
-        forcedCheckerPositions = $gameState.history[turn];
+        forcedCheckerPositions = game.history[turnNumber];
     };
 
     const handleMouseOut = () => {
@@ -59,7 +47,7 @@
 <div class="container">
     {#each infoByTurn as info, i}
         <div
-            class="info {info.player}"
+            class="info {info.playerColor}"
             role="button"
             tabindex="0"
             onmouseenter={() => handleMouseEnter(i)}

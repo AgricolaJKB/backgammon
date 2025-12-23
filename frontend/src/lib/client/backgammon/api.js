@@ -12,7 +12,7 @@ const getGameState = async (id = "test") => {
 const rollDices = async (id = "test") => {
   const response = await fetch(`${backend_url}/${id}/roll`);
   const data = await response.json();
-  const roll = data.throws[data.throws.length - 1];
+  const roll = data.diceRolls[data.diceRolls.length - 1];
   return [roll.dice1, roll.dice2];
 };
 

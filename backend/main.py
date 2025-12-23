@@ -11,6 +11,7 @@ sys.path.append(os.path.dirname(SCRIPT_DIR))
 from lib.connector import Connector
 from lib.models import Move
 from lib.utils import roll_dice, get_player
+from lib.mail import notify
 
 origins = [
     "http://localhost:4173",

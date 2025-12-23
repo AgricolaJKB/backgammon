@@ -3,59 +3,53 @@
     import Dice from './Dice.svelte';
     import Draggable from './Draggable.svelte';
     import History from './History.svelte';
-    import {
-        currentPlayerColor,
-        currentRoll,
-        currentTurn,
-        moves,
-        userColor,
-        gameId,
-        onTheMove,
-        gameState,
-    } from '../store.js';
-    import {onMount} from 'svelte';
+    import {onMount, getContext} from 'svelte';
     import {rollDices, insertMoves} from '../api.js';
 
-    let {forcedCheckerPositions = $bindable(null)} = $props();
+    const game = getContext('game');
 
-    let cache = $state();
+    let {forcedCheckerPositions = $bindable(null)} = $props();
 
     let forcedTurn = $state();
     let forcedPlayerColor = $state();
     let forcedDices = $state();
 
-    let playerToDisplay = $derived(forcedPlayerColor || $currentPlayerColor);
-    let turnToDisplay = $derived(forcedTurn || $currentTurn);
+    let playerToDisplay = $derived(
+        forcedPlayerColor || game.currentPlayerColor,
+    );
+    let turnToDisplay = $derived(forcedTurn || game.currentTurn);
     let isForced = $derived(forcedPlayerColor && forcedTurn);
 
     let dices = $state([0, 0]);
-
-    onMount(() => {
-        cache = document.querySelector('.moving-checker-cache');
-    });
+    $inspect(
+        'current',
+        game.gameState,
+        game.currentPlayerColor,
+        game.currentTurn,
+    );
 
     $effect(() => {
-        dices = forcedDices || $currentRoll;
+        dices = forcedDices || game.currentRoll;
     });
 
     const roll = async () => {
-        dices = await rollDices($gameId);
+        dices = await rollDices(game.gameId);
     };
 
     const endTurn = async () => {
         const okay = await insertMoves(
-            $gameId,
-            Object.values($moves).map((m) => {
+            game.gameId,
+            Object.values(game.localMoves).map((m) => {
                 // remove usedDice property
                 const {usedDice, ...rest} = m;
                 return rest;
             }),
         );
         if (okay === 'ok') {
-            $moves = [];
+            game.setLocalMoves([]);
         }
     };
-    $inspect($userColor, playerToDisplay);
+    $inspect(game.userColor, playerToDisplay);
 </script>
 
 <div class="container">
@@ -64,7 +58,7 @@
             <p class="player">
                 {#if isForced}
                     {playerToDisplay === 'white' ? 'Weiß' : 'Schwarz'} war
-                {:else if $userColor === playerToDisplay}
+                {:else if game.userColor === playerToDisplay}
                     Du bist
                 {:else}
                     {playerToDisplay === 'white' ? 'Weiß' : 'Schwarz'} ist
@@ -81,7 +75,7 @@
     </div>
 
     <div class="dice-container">
-        {#if !dices[0] && !dices[1] && $onTheMove}
+        {#if !dices[0] && !dices[1] && game.onTheMove}
             <span>
                 Zieh die Würfel mit der Maus,
                 <br />
@@ -91,7 +85,7 @@
         <Draggable
             onDragEnd={roll}
             maxDrag={[150, 150]}
-            deactivated={!!dices[0] || !$onTheMove}
+            deactivated={!!dices[0] || !game.onTheMove}
         >
             <div class="dices">
                 <Dice number={dices[0]} />
@@ -100,7 +94,7 @@
         </Draggable>
     </div>
 
-    {#if dices[0] && dices[1] && $onTheMove}
+    {#if dices[0] && dices[1] && game.onTheMove}
         <div class="actions">
             <Button onclick={endTurn}>Zug beenden</Button>
         </div>

@@ -4,28 +4,22 @@
     import SideBoard from './components/SideBoard.svelte';
     import Box from './components/Box.svelte';
 
-    import {
-        moves,
-        gameState,
-        userColor,
-        debug,
-        gameId,
-        updateGameState,
-    } from './store.js';
     import {getGameState} from './api.js';
-    import init from './initial.json';
-    import {onMount, untrack} from 'svelte';
-    import {getUsableDice} from './utils.js';
+    import {onMount, setContext} from 'svelte';
     import {crossfade} from 'svelte/transition';
     import {quintOut} from 'svelte/easing';
-
+    import {Game} from './game.svelte.js';
+    import DragLayer from './components/DragLayer.svelte';
     let {data} = $props();
+
+    let game = new Game(data?.userColor, data?.gameId);
+    setContext('game', game);
 
     $effect(() => {
         if (data) {
-            gameId.set(data.gameId);
-            userColor.set(data.userColor);
-            updateGameState(data.initialGameState);
+            game.gameId = data.gameId;
+            game.userColor = data.userColor;
+            game.updateState(data.initialGameState);
         }
     });
 
@@ -33,11 +27,11 @@
 
     onMount(() => {
         const interval = setInterval(async () => {
-            if ($gameId) {
-                const state = await getGameState($gameId);
+            if (game.gameId) {
+                const state = await getGameState(game.gameId);
                 const stateStr = JSON.stringify(state);
                 if (stateStr !== lastStateStr) {
-                    updateGameState(state);
+                    game.updateState(state);
                     lastStateStr = stateStr;
                 }
             }
@@ -64,131 +58,24 @@
     });
 
     let forcedCheckerPositions = $state(null);
-    let checkerPositions = $state(null);
-    let checkerPositionsWithMoves = $derived.by(() => {
-        if (!$moves) {
-            return checkerPositions;
-        }
-        const positions = {...checkerPositions};
-        for (const move of $moves) {
-            const {checker_id, start, end} = move;
-            const checker = positions[start]?.find((c) => c.id === checker_id);
-            positions[start] = positions[start]?.filter(
-                (c) => c.id !== checker_id,
-            );
-            if (!positions[end]) {
-                positions[end] = [];
-            }
-            positions[end] = [...positions[end], checker];
-        }
-        return positions;
-    });
-    let _checkerPositions = $derived(
-        forcedCheckerPositions || checkerPositionsWithMoves || checkerPositions,
-    );
 
-    $effect(() => {
-        if ($gameState?.board) {
-            checkerPositions = $gameState.board;
-        }
-    });
+    let _checkerPositions = $derived(forcedCheckerPositions || game.board);
 
-    const checkersById = init.reduce((acc, curr) => {
-        acc[curr.id] = {id: curr.id, color: curr.color};
-        return acc;
-    }, {});
-
-    const moveChecker = ({checker_id: id, start, end, usedDice}) => {
-        const checker = checkersById[id];
-        console.log('move', checker);
-        if (
-            // case 1: move to empty position
-            !checkerPositionsWithMoves[end]?.length ||
-            // case 2: move to position with same color
-            checkerPositionsWithMoves[end][0].color === checker.color
-        ) {
-            $moves = [...$moves, {checker_id: id, start, end, usedDice}];
-            return true;
-        } else if (
-            // case 3: move to position with one checker of opposite color
-            checkerPositionsWithMoves[end].length === 1 &&
-            checkerPositionsWithMoves[end][0].color !== checker.color
-        ) {
-            moveChecker({
-                checker_id: checkerPositionsWithMoves[end][0].id,
-                start: end,
-                end: `hit-area-${checkerPositionsWithMoves[end][0].color}`,
-                usedDice: [],
-            });
-            $moves = [...$moves, {checker_id: id, start, end, usedDice}];
-            return true;
-        }
-        return false;
-    };
-
-    let containersCentroids = $state();
-
-    onMount(() => {
-        containersCentroids = [
-            ...document.querySelectorAll('.checkerContainer'),
-        ].map((container) => {
-            const {left, top, width, height} =
-                container.getBoundingClientRect();
-            return {
-                x: left + width / 2,
-                y: top + height / 2,
-                id: container?.dataset?.position,
-            };
-        });
-    });
-
-    const getClosestContainer = ({x, y}) => {
-        const closestContainer = containersCentroids.reduce(
-            (acc, curr) => {
-                const distance = Math.sqrt(
-                    Math.pow(x - curr.x, 2) + Math.pow(y - curr.y, 2),
-                );
-                if (distance < acc.distance) {
-                    return {distance, ...curr};
-                }
-                return acc;
-            },
-            {distance: Infinity, id: null},
+    const handleCheckerDrop = ({checkerId, fromPos, coordinates, reset}) => {
+        const elements = document.elementsFromPoint(
+            coordinates.x,
+            coordinates.y,
         );
-        return closestContainer.id;
-    };
+        const container = elements.find((el) => el.dataset?.position);
 
-    const updateCheckerPosition = ({checker_id, start, coordinates, reset}) => {
-        const checker = checkersById[checker_id];
-        const end = getClosestContainer(coordinates);
-        const dices = $gameState.throws[$gameState.throws.length - 1];
-        const usedDice = getUsableDice({
-            dices: [dices.dice1, dices.dice2],
-            usedDices: $moves.map((m) => m.usedDice),
-            currentMove: {start, end},
-        });
-        if (
-            !usedDice ||
-            start === end ||
-            (!start.includes('hit') &&
-                !start.includes('out') &&
-                checker.color === 'white' &&
-                Number(start) > Number(end)) ||
-            (!start.includes('hit') &&
-                !start.includes('out') &&
-                checker.color === 'black' &&
-                Number(start) < Number(end))
-        ) {
+        if (!container) {
             reset();
             return;
         }
-        const move = {
-            checker_id,
-            start,
-            end,
-            usedDice: usedDice,
-        };
-        const success = moveChecker(move);
+
+        const toPos = container.dataset.position;
+
+        const success = game.attemptMove(checkerId, fromPos, toPos);
         if (!success) {
             reset();
         }
@@ -209,7 +96,7 @@
                                 {send}
                                 {receive}
                                 position={`hit-area-${color}`}
-                                onMove={updateCheckerPosition}
+                                onMove={handleCheckerDrop}
                             />
                         {/each}
                     </Box>
@@ -227,7 +114,7 @@
                                 {send}
                                 {receive}
                                 position={`out-area-${color}`}
-                                onMove={updateCheckerPosition}
+                                onMove={handleCheckerDrop}
                             />
                         {/each}
                     </Box>
@@ -237,30 +124,33 @@
     </div>
     <div class="main-area">
         <!-- 1 board, 2 sides, 12 triangles per side  -->
-        <div class="board {$userColor}">
-            {#each Array.from({length: 2}) as _, side}
-                <div class="side {side === 0 ? 'upper' : 'lower'}">
-                    {#each Array.from({length: 12}) as _, i}
+        <div class="board {game.userColor}">
+            {#each Array.from({length: 2}) as _, i}
+                {@const isUpper = i === 0}
+                {@const side = game.userColor === 'black' ? 1 - i : i}
+                <div class="side {isUpper ? 'upper' : 'lower'}">
+                    {#each Array.from({length: 12}) as _, j}
+                        {@const index = side * 12 + j}
                         <div
                             class="triangle root-triangle"
                             style="width: {100 / 12}%"
                         >
                             <Triangle
-                                color={i % 2 === 0 ? 'darkgrey' : 'grey'}
-                                reversed={side === 0}
+                                color={j % 2 === 0 ? 'darkgrey' : 'grey'}
+                                reversed={isUpper}
                             />
                             <div
-                                class="checkerContainer {side === 1 &&
+                                class="checkerContainer {!isUpper &&
                                     'reversed'} "
-                                data-position={i + side * 12}
+                                data-position={index}
                             >
-                                {#each _checkerPositions[i + side * 12] || [] as checker (checker.id)}
+                                {#each _checkerPositions[index] || [] as checker (checker.id)}
                                     <Checker
                                         {...checker}
                                         {send}
                                         {receive}
-                                        position={i + side * 12}
-                                        onMove={updateCheckerPosition}
+                                        position={index}
+                                        onMove={handleCheckerDrop}
                                     />
                                 {/each}
                             </div>
@@ -269,30 +159,11 @@
                 </div>
             {/each}
         </div>
-        {#if containersCentroids && $debug}
-            {#each containersCentroids as { x, y, id }, i}
-                <div
-                    class="marker"
-                    style="position: fixed; top: {y}px; left: {x}px; color: white; pointer-events: none"
-                >
-                    {id}
-                </div>
-            {/each}
-        {/if}
     </div>
 </div>
-<div class="moving-checker-cache"></div>
+<DragLayer />
 
 <style lang="scss">
-    .moving-checker-cache {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-    }
-
     .backgammon {
         height: calc(100dvh - 7rem);
         max-height: 100%;
@@ -364,7 +235,7 @@
         }
 
         &.black {
-            transform: scale(-1);
+            // transform: scale(-1);
         }
     }
     .side {
