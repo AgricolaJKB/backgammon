@@ -4,6 +4,7 @@ import { user } from '$lib/server/db/schema';
 import { eq, or } from 'drizzle-orm';
 import { hash } from '@node-rs/argon2';
 import { generateJWT, setSessionTokenCookie } from '$lib/server/auth';
+import { v4 as uuidv4 } from 'uuid';
 
 export const actions = {
 	default: async (event) => {
@@ -49,7 +50,7 @@ export const actions = {
 			parallelism: 1
 		});
 
-		const userId = crypto.randomUUID();
+		const userId = uuidv4();
 
 		try {
 			await db.insert(user).values({

@@ -5,13 +5,7 @@ import { db } from "$lib/server/db";
 import { user, games, friendships } from "$lib/server/db/schema";
 import { ne, and, or, eq, isNull } from "drizzle-orm";
 import { encodeBase32LowerCaseNoPadding } from "@oslojs/encoding";
-
-function generateGameId() {
-    // Generate a random ID similar to the user IDs (or just use UUID)
-    const bytes = new Uint8Array(15);
-    crypto.getRandomValues(bytes);
-    return encodeBase32LowerCaseNoPadding(bytes);
-}
+import { v4 as uuidv4 } from 'uuid';
 
 export const load = async (event) => {
   if (!event.locals.user) {
@@ -112,7 +106,7 @@ export const actions = {
          return fail(400, { message: "Es läuft bereits ein Spiel gegen diesen Gegner" });
     }
 
-    const gameId = generateGameId();
+    const gameId = uuidv4();
 
     // Randomize colors
     const isWhite = Math.random() > 0.5;
@@ -179,6 +173,7 @@ export const actions = {
     }
 
     await db.insert(friendships).values({
+      id: uuidv4(),
       senderId: event.locals.user.id,
       receiverId: targetUser.id,
       status: 'pending'

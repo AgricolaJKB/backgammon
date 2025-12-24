@@ -4,7 +4,7 @@
     import Draggable from './Draggable.svelte';
     import History from './History.svelte';
     import {onMount, getContext} from 'svelte';
-    import {rollDices, insertMoves} from '../api.js';
+    import {enhance} from '$app/forms';
 
     const game = getContext('game');
 
@@ -26,24 +26,22 @@
         dices = forcedDices || game.currentRoll;
     });
 
-    const roll = async ({reset}) => {
-        dices = await rollDices(game.gameId);
+    let rollForm;
+    const roll = ({reset}) => {
+        rollForm.requestSubmit();
         reset();
     };
 
-    const endTurn = async () => {
-        const okay = await insertMoves(
-            game.gameId,
+    let movesValue = $derived(
+        JSON.stringify(
             Object.values(game.localMoves).map((m) => {
                 // remove usedDice property
                 const {usedDice, ...rest} = m;
                 return rest;
             }),
-        );
-        if (okay === 'ok') {
-            game.confirmTurn();
-        }
-    };
+        ),
+    );
+
     $inspect(game.userColor, playerToDisplay);
 </script>
 
@@ -77,6 +75,21 @@
                 um zu würfeln
             </span>
         {/if}
+
+        <form
+            method="POST"
+            action="?/roll"
+            bind:this={rollForm}
+            use:enhance={() => {
+                return async ({result}) => {
+                    if (result.type === 'success') {
+                        dices = [result.data.dice1, result.data.dice2];
+                    }
+                };
+            }}
+            style="display: none;"
+        ></form>
+
         <Draggable
             onDragEnd={roll}
             maxDrag={[150, 150]}
@@ -91,7 +104,20 @@
 
     {#if dices[0] && dices[1] && game.onTheMove}
         <div class="actions">
-            <Button onclick={endTurn}>Zug beenden</Button>
+            <form
+                method="POST"
+                action="?/move"
+                use:enhance={() => {
+                    return async ({result}) => {
+                        if (result.type === 'success') {
+                            game.confirmTurn();
+                        }
+                    };
+                }}
+            >
+                <input type="hidden" name="moves" value={movesValue} />
+                <Button type="submit">Zug beenden</Button>
+            </form>
         </div>
     {/if}
 </div>

@@ -4,37 +4,35 @@
     import SideBoard from './components/SideBoard.svelte';
     import Box from './components/Box.svelte';
 
-    import {getGameState} from './api.js';
     import {onMount, setContext} from 'svelte';
     import {crossfade} from 'svelte/transition';
     import {quintOut} from 'svelte/easing';
     import {Game} from './game.svelte.js';
     import DragLayer from './components/DragLayer.svelte';
+    import {invalidateAll} from '$app/navigation';
+
     let {data} = $props();
 
     let game = new Game(data?.userColor, data?.gameId, data?.initialGameState);
     setContext('game', game);
 
+    let lastStateStr = JSON.stringify(data?.initialGameState);
+
     $effect(() => {
         if (data) {
-            game.gameId = data.gameId;
-            game.userColor = data.userColor;
-            game.updateState(data.initialGameState);
+            const stateStr = JSON.stringify(data.initialGameState);
+            if (stateStr !== lastStateStr) {
+                game.gameId = data.gameId;
+                game.userColor = data.userColor;
+                game.updateState(data.initialGameState);
+                lastStateStr = stateStr;
+            }
         }
     });
 
-    let lastStateStr = null;
-
     onMount(() => {
-        const interval = setInterval(async () => {
-            if (game.gameId) {
-                const state = await getGameState(game.gameId);
-                const stateStr = JSON.stringify(state);
-                if (stateStr !== lastStateStr) {
-                    game.updateState(state);
-                    lastStateStr = stateStr;
-                }
-            }
+        const interval = setInterval(() => {
+            invalidateAll();
         }, 1000);
         return () => clearInterval(interval);
     });

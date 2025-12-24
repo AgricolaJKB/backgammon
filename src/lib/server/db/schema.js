@@ -18,6 +18,14 @@ export const games = sqliteTable("games", {
   updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`)
 });
 
+export const friendships = sqliteTable("friendships", {
+  id: text("id").primaryKey(),
+  senderId: text("sender_id").notNull().references(() => user.id),
+  receiverId: text("receiver_id").notNull().references(() => user.id),
+  status: text("status").notNull().default("pending"), // 'pending', 'accepted', 'rejected'
+  createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`)
+});
+
 export const moves = sqliteTable("moves", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   gameId: text("game_id").notNull().references(() => games.id),
@@ -39,10 +47,3 @@ export const diceRolls = sqliteTable("dice_rolls", {
   createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`)
 });
 
-export const friendships = sqliteTable("friendships", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  senderId: text("sender_id").notNull().references(() => user.id),
-  receiverId: text("receiver_id").notNull().references(() => user.id),
-  status: text("status").notNull().default("pending"), // 'pending', 'accepted', 'rejected'
-  createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`)
-});

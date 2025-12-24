@@ -1,7 +1,107 @@
 import { error, redirect } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { games, moves, diceRolls } from '$lib/server/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, desc } from 'drizzle-orm';
+
+function rollDice() {
+  return Math.floor(Math.random() * 6) + 1;
+}
+
+export const actions = {
+  roll: async ({ params, locals }) => {
+    const { slug: id } = params;
+
+    if (!locals.user) {
+      throw error(401, 'Unauthorized');
+    }
+
+    // Get last roll to determine next turn
+    const lastRoll = await db.select().from(diceRolls).where(eq(diceRolls.gameId, id)).orderBy(desc(diceRolls.id)).limit(1);
+
+    let player = 'white';
+    let turn = 1;
+
+    if (lastRoll.length > 0) {
+      const lastColor = lastRoll[0].playerColor;
+      const isLastWhite = lastColor === 'white' || lastColor === 'w';
+      player = isLastWhite ? 'black' : 'white';
+      turn = lastRoll[0].turnNumber + 1;
+    }
+
+    // Verify user
+    const game = await db.select().from(games).where(eq(games.id, id)).limit(1);
+    if (game.length === 0) {
+      throw error(404, 'Game not found');
+    }
+
+    const expectedUserId = player === 'white' ? game[0].whitePlayerId : game[0].blackPlayerId;
+
+    if (locals.user.id !== expectedUserId) {
+      throw error(403, 'Not your turn to roll');
+    }
+
+    const dice1 = rollDice();
+    const dice2 = rollDice();
+
+    await db.insert(diceRolls).values({
+      gameId: id,
+      turnNumber: turn,
+      playerColor: player,
+      dice1,
+      dice2
+    });
+
+    return { success: true, dice1, dice2 };
+  },
+
+  move: async ({ params, request, locals }) => {
+    const { slug: id } = params;
+
+    if (!locals.user) {
+      throw error(401, 'Unauthorized');
+    }
+
+    const formData = await request.formData();
+    const movesData = JSON.parse(formData.get('moves'));
+
+    // Get context for turn/player from the last dice roll
+    const lastRoll = await db.select().from(diceRolls).where(eq(diceRolls.gameId, id)).orderBy(desc(diceRolls.id)).limit(1);
+
+    if (lastRoll.length === 0) {
+      throw error(400, 'No dice roll found for this game');
+    }
+
+    const player = lastRoll[0].playerColor;
+    const turn = lastRoll[0].turnNumber;
+
+    // Verify user is the correct player
+    const game = await db.select().from(games).where(eq(games.id, id)).limit(1);
+    if (game.length === 0) {
+      throw error(404, 'Game not found');
+    }
+
+    const isWhite = player === 'white' || player === 'w';
+    const expectedUserId = isWhite ? game[0].whitePlayerId : game[0].blackPlayerId;
+
+    if (locals.user.id !== expectedUserId) {
+      throw error(403, 'Not your turn');
+    }
+
+    // Insert all moves
+    for (const move of movesData) {
+      await db.insert(moves).values({
+        gameId: id,
+        turnNumber: turn,
+        playerColor: player,
+        checkerId: move.checkerId,
+        fromPos: move.fromPos,
+        toPos: move.toPos
+      });
+    }
+
+    return { success: true };
+  }
+};
 
 export const load = async ({ params, locals }) => {
   if (!locals.user) {
