@@ -7,7 +7,7 @@
     "dev": "vite dev",
     "build": "vite build",
     "start": "node build",
-    "preview": "vite preview --host 0.0.0.0",
+    "preview": "vite preview",
     "db:push": "drizzle-kit push",
     "db:setup": "sh ./scripts/setup_db.sh",
     "db:migrate": "drizzle-kit migrate",

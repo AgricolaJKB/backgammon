@@ -81,13 +81,16 @@ jobs:
         chmod 600 ~/.ssh/id_rsa
         ssh-keyscan ${{ secrets.UBERSPACE_HOST }} >> ~/.ssh/known_hosts
 
+    - name: Create .env file
+      run: echo "${{ secrets.ENV_FILE }}" > .env
+
     - name: Deploy to Uberspace
       run: |
         # Create directory if it doesn't exist
         ssh ${{ secrets.UBERSPACE_USER }}@${{ secrets.UBERSPACE_HOST }} "mkdir -p ~/backgammon/src/lib/server/db"
         
         # Sync files
-        rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./build ./package.json ./package-lock.json ./drizzle.config.js ./scripts ${{ secrets.UBERSPACE_USER }}@${{ secrets.UBERSPACE_HOST }}:~/backgammon/
+        rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./build ./package.json ./package-lock.json ./drizzle.config.js ./scripts ./.env ${{ secrets.UBERSPACE_USER }}@${{ secrets.UBERSPACE_HOST }}:~/backgammon/
         
         # Sync schema for migrations/drizzle
         rsync -avz -e "ssh -o StrictHostKeyChecking=no" ./src/lib/server/db/schema.js ${{ secrets.UBERSPACE_USER }}@${{ secrets.UBERSPACE_HOST }}:~/backgammon/src/lib/server/db/
