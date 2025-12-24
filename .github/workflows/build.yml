@@ -96,7 +96,7 @@ jobs:
       run: |
         ssh ${{ secrets.UBERSPACE_USER }}@${{ secrets.UBERSPACE_HOST }} << 'EOF'
           cd ~/backgammon
-          npm ci --omit=dev
+          npm ci
           
           # Optional: Run migrations if you have them set up
           # npm run db:migrate
