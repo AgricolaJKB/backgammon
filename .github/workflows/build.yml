@@ -1,10 +1,8 @@
-name: Build
+name: Build and Deploy
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches: [ "production" ]
 
 jobs:
   build:
@@ -25,8 +23,66 @@ jobs:
     - name: Build
       run: npm run build
 
-    - name: Archive production artifacts
+    - name: Archive build artifacts
       uses: actions/upload-artifact@v4
       with:
         name: build
         path: build
+
+    - name: Archive package files
+      uses: actions/upload-artifact@v4
+      with:
+        name: package-files
+        path: |
+          package.json
+          package-lock.json
+          drizzle.config.js
+          src/lib/server/db/schema.js
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: build
+        path: build
+
+    - name: Download package files
+      uses: actions/download-artifact@v4
+      with:
+        name: package-files
+        path: .
+
+    - name: Setup SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan ${{ secrets.UBERSPACE_HOST }} >> ~/.ssh/known_hosts
+
+    - name: Deploy to Uberspace
+      run: |
+        # Create directory if it doesn't exist
+        ssh ${{ secrets.UBERSPACE_USER }}@${{ secrets.UBERSPACE_HOST }} "mkdir -p ~/backgammon/src/lib/server/db"
+        
+        # Sync files
+        rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./build ./package.json ./package-lock.json ./drizzle.config.js ${{ secrets.UBERSPACE_USER }}@${{ secrets.UBERSPACE_HOST }}:~/backgammon/
+        
+        # Sync schema for migrations/drizzle
+        rsync -avz -e "ssh -o StrictHostKeyChecking=no" ./src/lib/server/db/schema.js ${{ secrets.UBERSPACE_USER }}@${{ secrets.UBERSPACE_HOST }}:~/backgammon/src/lib/server/db/
+
+    - name: Install Dependencies and Restart Service
+      run: |
+        ssh ${{ secrets.UBERSPACE_USER }}@${{ secrets.UBERSPACE_HOST }} << 'EOF'
+          cd ~/backgammon
+          npm ci --omit=dev
+          
+          # Optional: Run migrations if you have them set up
+          # npm run db:migrate
+          
+          systemctl --user restart backgammon
+        EOF
