@@ -2,6 +2,7 @@ import {error, redirect} from '@sveltejs/kit';
 import {db} from '$lib/server/db';
 import {games, moves, diceRolls} from '$lib/server/db/schema';
 import {eq, desc} from 'drizzle-orm';
+import {gameEvents} from '$lib/server/gameEvents';
 
 function rollDice() {
     return Math.floor(Math.random() * 6) + 1;
@@ -61,6 +62,8 @@ export const actions = {
             dice2,
         });
 
+        gameEvents.emit(`update:${id}`);
+
         return {success: true, dice1, dice2};
     },
 
@@ -118,6 +121,7 @@ export const actions = {
                 fromPos: move.fromPos,
                 toPos: move.toPos,
             });
+            gameEvents.emit(`update:${id}`);
         }
 
         return {success: true};
@@ -184,9 +188,24 @@ export const load = async ({params, locals}) => {
         createdAt: r.createdAt,
     }));
 
+    const lastMoveTime =
+        formattedMoves.length > 0
+            ? new Date(
+                  formattedMoves[formattedMoves.length - 1].createdAt,
+              ).getTime()
+            : 0;
+    const lastRollTime =
+        formattedRolls.length > 0
+            ? new Date(
+                  formattedRolls[formattedRolls.length - 1].createdAt,
+              ).getTime()
+            : 0;
+    const lastUpdate = Math.max(lastMoveTime, lastRollTime);
+
     return {
         gameId,
         userColor,
+        lastUpdate,
         initialGameState: {
             moves: formattedMoves,
             diceRolls: formattedRolls,

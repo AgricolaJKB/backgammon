@@ -16,25 +16,33 @@
     let game = new Game(data?.userColor, data?.gameId, data?.initialGameState);
     setContext('game', game);
 
-    let lastStateStr = JSON.stringify(data?.initialGameState);
+    let lastUpdate = data?.lastUpdate;
 
     $effect(() => {
         if (data) {
-            const stateStr = JSON.stringify(data.initialGameState);
-            if (stateStr !== lastStateStr) {
+            if (data.lastUpdate !== lastUpdate) {
                 game.gameId = data.gameId;
                 game.userColor = data.userColor;
                 game.updateState(data.initialGameState);
-                lastStateStr = stateStr;
+                lastUpdate = data.lastUpdate;
             }
         }
     });
 
-    onMount(() => {
-        const interval = setInterval(() => {
-            invalidateAll();
-        }, 1000);
-        return () => clearInterval(interval);
+    $effect(() => {
+        if (data?.gameId) {
+            const es = new EventSource(`/api/game/${data.gameId}/events`);
+            es.onmessage = (event) => {
+                const message = JSON.parse(event.data);
+                if (message.type === 'update') {
+                    invalidateAll();
+                }
+            };
+
+            return () => {
+                es.close();
+            };
+        }
     });
 
     const [send, receive] = crossfade({
