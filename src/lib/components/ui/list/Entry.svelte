@@ -60,7 +60,7 @@
             <div class="checker {player.color}"></div>
         </div>
     </a>
-    <button
+    <!-- <button
         class="notification-toggle"
         class:active={notificationsEnabled}
         onclick={toggleNotifications}
@@ -71,7 +71,7 @@
         {:else}
             <BellCrossed />
         {/if}
-    </button>
+    </button> -->
 </div>
 
 <style lang="scss">
