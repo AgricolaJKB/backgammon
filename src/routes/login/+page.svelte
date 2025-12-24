@@ -1,5 +1,5 @@
 <script>
-    import Button from '$lib/client/components/button/index.svelte';
+    import Button from '$lib/components/ui/button/index.svelte';
     import {enhance} from '$app/forms';
 
     let {form} = $props();

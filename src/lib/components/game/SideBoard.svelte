@@ -1,5 +1,5 @@
 <script>
-    import Button from '$lib/client/components/button/index.svelte';
+    import Button from '$lib/components/ui/button/index.svelte';
     import Dice from './Dice.svelte';
     import Draggable from './Draggable.svelte';
     import History from './History.svelte';

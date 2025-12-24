@@ -1,6 +1,6 @@
 <script>
     import {enhance} from '$app/forms';
-    import Button from '$lib/client/components/button/index.svelte';
+    import Button from '$lib/components/ui/button/index.svelte';
     import {invalidate} from '$app/navigation';
     import {onMount} from 'svelte';
 

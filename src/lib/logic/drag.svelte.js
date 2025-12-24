@@ -29,7 +29,7 @@ export class DragManager {
     addListeners() {
         window.addEventListener('mousemove', this.handleMove);
         window.addEventListener('mouseup', this.handleEnd);
-        window.addEventListener('touchmove', this.handleMove, { passive: false });
+        window.addEventListener('touchmove', this.handleMove, {passive: false});
         window.addEventListener('touchend', this.handleEnd);
     }
 
@@ -56,11 +56,11 @@ export class DragManager {
         }
 
         this.move(clientX, clientY);
-    }
+    };
 
     handleEnd = () => {
         this.end();
-    }
+    };
 
     move(x, y) {
         if (!this.active) return;
@@ -84,16 +84,16 @@ export class DragManager {
         const finalY = this.y;
 
         // Calculate center
-        let center = { x: finalX, y: finalY };
+        let center = {x: finalX, y: finalY};
         if (this.initialRect) {
-             const deltaX = finalX - this.startX;
-             const deltaY = finalY - this.startY;
-             const currentLeft = this.initialRect.left + deltaX;
-             const currentTop = this.initialRect.top + deltaY;
-             center = {
-                 x: currentLeft + this.initialRect.width / 2,
-                 y: currentTop + this.initialRect.height / 2
-             };
+            const deltaX = finalX - this.startX;
+            const deltaY = finalY - this.startY;
+            const currentLeft = this.initialRect.left + deltaX;
+            const currentTop = this.initialRect.top + deltaY;
+            center = {
+                x: currentLeft + this.initialRect.width / 2,
+                y: currentTop + this.initialRect.height / 2,
+            };
         }
 
         if (this.onEndCallback) {
@@ -107,14 +107,14 @@ export class DragManager {
     }
 
     get currentPosition() {
-        if (!this.initialRect) return { top: 0, left: 0 };
+        if (!this.initialRect) return {top: 0, left: 0};
         const deltaX = this.x - this.startX;
         const deltaY = this.y - this.startY;
         return {
             top: this.initialRect.top + deltaY,
             left: this.initialRect.left + deltaX,
             width: this.initialRect.width,
-            height: this.initialRect.height
+            height: this.initialRect.height,
         };
     }
 }

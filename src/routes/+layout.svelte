@@ -1,6 +1,6 @@
 <script>
-    import House from '$lib/client/assets/house-solid.svg.svelte';
-    import Logout from '$lib/client/assets/right-to-bracket.svg.svelte';
+    import House from '$lib/assets/house-solid.svg.svelte';
+    import Logout from '$lib/assets/right-to-bracket.svg.svelte';
     import {page} from '$app/state';
     import {enhance} from '$app/forms';
 

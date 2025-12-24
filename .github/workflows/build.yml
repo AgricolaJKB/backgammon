@@ -1,108 +1,108 @@
 name: Build and Deploy
 
 on:
-  push:
-    branches: [ "production" ]
+    push:
+        branches: ['production']
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+    build:
+        runs-on: ubuntu-latest
 
-    steps:
-    - uses: actions/checkout@v4
+        steps:
+            - uses: actions/checkout@v4
 
-    - name: Use Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20.x'
-        cache: 'npm'
+            - name: Use Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20.x'
+                  cache: 'npm'
 
-    - name: Install dependencies
-      run: npm ci
+            - name: Install dependencies
+              run: npm ci
 
-    - name: Setup Dummy DB
-      run: |
-        mkdir -p db
-        touch db/database.db
-      env:
-        DATABASE_URL: "file:./db/database.db"
+            - name: Setup Dummy DB
+              run: |
+                  mkdir -p db
+                  touch db/database.db
+              env:
+                  DATABASE_URL: 'file:./db/database.db'
 
-    - name: Initialize Dummy DB
-      run: |
-        npx drizzle-kit generate
-        npx drizzle-kit migrate
-      env:
-        DATABASE_URL: "file:./db/database.db"
+            - name: Initialize Dummy DB
+              run: |
+                  npx drizzle-kit generate
+                  npx drizzle-kit migrate
+              env:
+                  DATABASE_URL: 'file:./db/database.db'
 
-    - name: Build
-      run: npm run build
-      env:
-        DATABASE_URL: "./db/database.db"
+            - name: Build
+              run: npm run build
+              env:
+                  DATABASE_URL: './db/database.db'
 
-    - name: Archive build artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: build
-        path: build
+            - name: Archive build artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                  name: build
+                  path: build
 
-    - name: Archive package files
-      uses: actions/upload-artifact@v4
-      with:
-        name: package-files
-        path: |
-          package.json
-          package-lock.json
-          drizzle.config.js
-          src/lib/server/db/schema.js
-          scripts
+            - name: Archive package files
+              uses: actions/upload-artifact@v4
+              with:
+                  name: package-files
+                  path: |
+                      package.json
+                      package-lock.json
+                      drizzle.config.js
+                      src/lib/server/db/schema.js
+                      scripts
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment: production
+    deploy:
+        needs: build
+        runs-on: ubuntu-latest
+        environment: production
 
-    steps:
-    - name: Download build artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: build
-        path: build
+        steps:
+            - name: Download build artifacts
+              uses: actions/download-artifact@v4
+              with:
+                  name: build
+                  path: build
 
-    - name: Download package files
-      uses: actions/download-artifact@v4
-      with:
-        name: package-files
-        path: .
+            - name: Download package files
+              uses: actions/download-artifact@v4
+              with:
+                  name: package-files
+                  path: .
 
-    - name: Setup SSH
-      run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan ${{ secrets.UBERSPACE_HOST }} >> ~/.ssh/known_hosts
+            - name: Setup SSH
+              run: |
+                  mkdir -p ~/.ssh
+                  echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+                  chmod 600 ~/.ssh/id_rsa
+                  ssh-keyscan ${{ secrets.UBERSPACE_HOST }} >> ~/.ssh/known_hosts
 
-    - name: Create .env file
-      run: echo "${{ secrets.ENV_FILE }}" > .env
+            - name: Create .env file
+              run: echo "${{ secrets.ENV_FILE }}" > .env
 
-    - name: Deploy to Uberspace
-      run: |
-        # Create directory if it doesn't exist
-        ssh ${{ secrets.UBERSPACE_USER }}@${{ secrets.UBERSPACE_HOST }} "mkdir -p ~/backgammon/src/lib/server/db"
-        
-        # Sync files
-        rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./build ./package.json ./package-lock.json ./drizzle.config.js ./scripts ./.env ${{ secrets.UBERSPACE_USER }}@${{ secrets.UBERSPACE_HOST }}:~/backgammon/
-        
-        # Sync schema for migrations/drizzle
-        rsync -avz -e "ssh -o StrictHostKeyChecking=no" ./src/lib/server/db/schema.js ${{ secrets.UBERSPACE_USER }}@${{ secrets.UBERSPACE_HOST }}:~/backgammon/src/lib/server/db/
+            - name: Deploy to Uberspace
+              run: |
+                  # Create directory if it doesn't exist
+                  ssh ${{ secrets.UBERSPACE_USER }}@${{ secrets.UBERSPACE_HOST }} "mkdir -p ~/backgammon/src/lib/server/db"
 
-    - name: Install Dependencies and Restart Service
-      run: |
-        ssh ${{ secrets.UBERSPACE_USER }}@${{ secrets.UBERSPACE_HOST }} << 'EOF'
-          cd ~/backgammon
-          npm ci
-          
-          # Optional: Run migrations if you have them set up
-          # npm run db:migrate
-          
-          systemctl --user restart backgammon
-        EOF
+                  # Sync files
+                  rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./build ./package.json ./package-lock.json ./drizzle.config.js ./scripts ./.env ${{ secrets.UBERSPACE_USER }}@${{ secrets.UBERSPACE_HOST }}:~/backgammon/
+
+                  # Sync schema for migrations/drizzle
+                  rsync -avz -e "ssh -o StrictHostKeyChecking=no" ./src/lib/server/db/schema.js ${{ secrets.UBERSPACE_USER }}@${{ secrets.UBERSPACE_HOST }}:~/backgammon/src/lib/server/db/
+
+            - name: Install Dependencies and Restart Service
+              run: |
+                  ssh ${{ secrets.UBERSPACE_USER }}@${{ secrets.UBERSPACE_HOST }} << 'EOF'
+                    cd ~/backgammon
+                    npm ci
+                    
+                    # Optional: Run migrations if you have them set up
+                    # npm run db:migrate
+                    
+                    systemctl --user restart backgammon
+                  EOF

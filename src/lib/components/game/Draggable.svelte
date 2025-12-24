@@ -1,5 +1,5 @@
 <script>
-    import {dragManager} from '../drag.svelte.js';
+    import {dragManager} from '../../logic/drag.svelte.js';
 
     /**
      * @typedef {Object} Props

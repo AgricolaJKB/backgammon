@@ -1,4 +1,4 @@
-import init from './initial.json';
+import init from '../assets/initial.json';
 
 const checkersById = init.reduce((acc, curr) => {
     acc[curr.id] = {id: curr.id, color: curr.color};
@@ -31,14 +31,16 @@ export class Game {
     diceRolls = $derived(this.gameState?.diceRolls || []);
 
     currentPlayerColor = $derived.by(() => {
-        if (!this.diceRolls.length) return "white";
+        if (!this.diceRolls.length) return 'white';
         const lastRoll = this.diceRolls[this.diceRolls.length - 1];
-        const lastRollColor = lastRoll?.playerColor || "white";
+        const lastRollColor = lastRoll?.playerColor || 'white';
 
         // Check if the current player has finished their turn
-        const lastMove = this.serverMoves.length ? this.serverMoves[this.serverMoves.length - 1] : null;
+        const lastMove = this.serverMoves.length
+            ? this.serverMoves[this.serverMoves.length - 1]
+            : null;
         if (lastMove && lastMove.turnNumber === lastRoll.turnNumber) {
-            return lastRollColor === "white" ? "black" : "white";
+            return lastRollColor === 'white' ? 'black' : 'white';
         }
 
         return lastRollColor;
@@ -49,7 +51,9 @@ export class Game {
         const lastRoll = this.diceRolls[this.diceRolls.length - 1];
 
         // Check if the current player has finished their turn
-        const lastMove = this.serverMoves.length ? this.serverMoves[this.serverMoves.length - 1] : null;
+        const lastMove = this.serverMoves.length
+            ? this.serverMoves[this.serverMoves.length - 1]
+            : null;
         if (lastMove && lastMove.turnNumber === lastRoll.turnNumber) {
             return lastRoll.turnNumber + 1;
         }
@@ -62,7 +66,9 @@ export class Game {
         const lastRoll = this.diceRolls[this.diceRolls.length - 1];
 
         // Check if the current player has finished their turn
-        const lastMove = this.serverMoves.length ? this.serverMoves[this.serverMoves.length - 1] : null;
+        const lastMove = this.serverMoves.length
+            ? this.serverMoves[this.serverMoves.length - 1]
+            : null;
         if (lastMove && lastMove.turnNumber === lastRoll.turnNumber) {
             return [null, null];
         }
@@ -80,13 +86,15 @@ export class Game {
             return acc;
         }, {});
 
-        const filteredMoves = (turnNumber || turnNumber === 0)
-            ? moves.filter((move) => move.turnNumber <= turnNumber)
-            : moves;
+        const filteredMoves =
+            turnNumber || turnNumber === 0
+                ? moves.filter((move) => move.turnNumber <= turnNumber)
+                : moves;
 
-        const movesInTurn = (turnNumber || turnNumber === 0)
-            ? filteredMoves.filter((move) => move.turnNumber === turnNumber)
-            : [];
+        const movesInTurn =
+            turnNumber || turnNumber === 0
+                ? filteredMoves.filter((move) => move.turnNumber === turnNumber)
+                : [];
 
         const lastMovesPerChecker = filteredMoves.reduce((acc, move) => {
             acc[move.checkerId] = move;
@@ -104,7 +112,9 @@ export class Game {
             acc[position].push({
                 id: curr.id,
                 color: curr.color,
-                hasBeenMoved: !!movesInTurn.find((move) => move.checkerId === curr.id)
+                hasBeenMoved: !!movesInTurn.find(
+                    (move) => move.checkerId === curr.id,
+                ),
             });
             return acc;
         }, {});
@@ -113,7 +123,7 @@ export class Game {
 
     getBoardHistory(moves) {
         const lastTurn = moves[moves.length - 1]?.turnNumber || 0;
-        return Array.from({ length: lastTurn }, (_, i) => {
+        return Array.from({length: lastTurn}, (_, i) => {
             return this.calculateBoardState(moves, i + 1);
         });
     }
@@ -140,11 +150,13 @@ export class Game {
         const positions = JSON.parse(JSON.stringify(baseBoard));
 
         for (const move of this.localMoves) {
-            const { checkerId, fromPos, toPos } = move;
+            const {checkerId, fromPos, toPos} = move;
 
             // Remove from old position
             if (positions[fromPos]) {
-                positions[fromPos] = positions[fromPos].filter(c => c.id !== checkerId);
+                positions[fromPos] = positions[fromPos].filter(
+                    (c) => c.id !== checkerId,
+                );
             }
 
             // Find checker details
@@ -156,7 +168,11 @@ export class Game {
             }
             // We need to reconstruct the checker object for the board
             // For local moves, hasBeenMoved is definitely true
-            positions[toPos].push({ id: checkerId, color: checker.color, hasBeenMoved: true });
+            positions[toPos].push({
+                id: checkerId,
+                color: checker.color,
+                hasBeenMoved: true,
+            });
         }
         return positions;
     });
@@ -176,8 +192,10 @@ export class Game {
     }
 
     numerisePosition(position) {
-        if (position === "hit-area-white" || position === "out-area-black") return -1;
-        if (position === "hit-area-black" || position === "out-area-white") return 24;
+        if (position === 'hit-area-white' || position === 'out-area-black')
+            return -1;
+        if (position === 'hit-area-black' || position === 'out-area-white')
+            return 24;
         return parseInt(position);
     }
 
@@ -187,9 +205,8 @@ export class Game {
         const dices = [lastRoll.dice1, lastRoll.dice2];
 
         // Calculate dice options (doubles allow four moves)
-        const allDices = dices[0] === dices[1]
-            ? Array(4).fill(dices[0])
-            : [...dices];
+        const allDices =
+            dices[0] === dices[1] ? Array(4).fill(dices[0]) : [...dices];
 
         // Remove used dice from available pool
         for (const move of this.localMoves) {
@@ -207,10 +224,10 @@ export class Game {
 
         // Check if single dice is sufficient for the current move
         const currentDistance = Math.abs(
-            this.numerisePosition(toPos) - this.numerisePosition(fromPos)
+            this.numerisePosition(toPos) - this.numerisePosition(fromPos),
         );
 
-        return allDices.find(dice => dice === currentDistance);
+        return allDices.find((dice) => dice === currentDistance);
     }
 
     attemptMove(checkerId, fromPos, toPos) {
@@ -246,7 +263,7 @@ export class Game {
                 checkerId: hitChecker.id,
                 fromPos: toPos,
                 toPos: `hit-area-${hitChecker.color}`,
-                usedDice: []
+                usedDice: [],
             });
         }
 
@@ -255,7 +272,7 @@ export class Game {
             checkerId,
             fromPos,
             toPos,
-            usedDice
+            usedDice,
         });
         return true;
     }
@@ -277,6 +294,3 @@ export class Game {
         this.localMoves = [];
     }
 }
-
-
-

@@ -1,6 +1,6 @@
 <script>
-    import List from '$lib/client/components/list/index.svelte';
-    import FriendsList from '$lib/client/components/FriendsList.svelte';
+    import List from '$lib/components/ui/list/index.svelte';
+    import FriendsList from '$lib/components/ui/FriendsList.svelte';
 
     import {enhance} from '$app/forms';
 

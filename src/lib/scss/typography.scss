@@ -1,0 +1,24 @@
+@mixin font-xs {
+    font-size: 0.75rem;
+    line-height: 1rem;
+}
+
+@mixin font-s {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+}
+
+@mixin font-m {
+    font-size: 1rem;
+    line-height: 1.5rem;
+}
+
+@mixin font-l {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+}
+
+@mixin font-xl {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+}

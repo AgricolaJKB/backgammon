@@ -1,5 +1,5 @@
 <script>
-    import Backgammon from '$lib/client/backgammon/App.svelte';
+    import Backgammon from '$lib/components/game/Board.svelte';
     let {data} = $props();
 </script>
 

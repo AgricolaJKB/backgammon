@@ -1,14 +1,14 @@
 <script>
-    import Triangle from './components/Triangle.svelte';
-    import Checker from './components/Checker.svelte';
-    import SideBoard from './components/SideBoard.svelte';
-    import Box from './components/Box.svelte';
+    import Triangle from './Triangle.svelte';
+    import Checker from './Checker.svelte';
+    import SideBoard from './SideBoard.svelte';
+    import Box from './Box.svelte';
 
     import {onMount, setContext} from 'svelte';
     import {crossfade} from 'svelte/transition';
     import {quintOut} from 'svelte/easing';
-    import {Game} from './game.svelte.js';
-    import DragLayer from './components/DragLayer.svelte';
+    import {Game} from '../../logic/game.svelte.js';
+    import DragLayer from './DragLayer.svelte';
     import {invalidateAll} from '$app/navigation';
 
     let {data} = $props();

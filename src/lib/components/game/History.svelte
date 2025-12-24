@@ -1,6 +1,6 @@
 <script>
     import {getContext} from 'svelte';
-    import initial from '../initial.json';
+    import initial from '../../assets/initial.json';
 
     const game = getContext('game');
 
