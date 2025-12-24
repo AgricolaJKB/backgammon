@@ -3,6 +3,9 @@ import { defineConfig } from "vite";
 
 export default defineConfig({
   plugins: [sveltekit()],
+  preview: {
+    allowedHosts: ["agricola.uber.space"]
+  },
   css: {
     preprocessorOptions: {
       // if using SCSS
