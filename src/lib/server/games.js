@@ -1,5 +1,5 @@
 import {db} from '$lib/server/db';
-import {games, user, moves} from '$lib/server/db/schema';
+import {games, user, moves, diceRolls} from '$lib/server/db/schema';
 import {eq, or, desc} from 'drizzle-orm';
 import {alias} from 'drizzle-orm/sqlite-core';
 
@@ -32,6 +32,13 @@ export async function getGamesForUser(userId) {
                 .orderBy(desc(moves.id))
                 .limit(1);
 
+            const lastRoll = await db
+                .select()
+                .from(diceRolls)
+                .where(eq(diceRolls.gameId, game.id))
+                .orderBy(desc(diceRolls.id))
+                .limit(1);
+
             let turn = 1;
             let currentPlayerColor = 'white';
 
@@ -42,6 +49,12 @@ export async function getGamesForUser(userId) {
                 turn = lastMove[0].turnNumber + 1;
             }
 
+            const parseDate = (d) => (d ? new Date(d + 'Z').getTime() : 0);
+
+            const lastMoveTime = parseDate(lastMove[0]?.createdAt);
+            const lastRollTime = parseDate(lastRoll[0]?.createdAt);
+            const gameUpdateTime = parseDate(game.updatedAt);
+
             return {
                 gameId: game.id,
                 players: [
@@ -51,7 +64,11 @@ export async function getGamesForUser(userId) {
                 status: game.winnerId ? 'finished' : 'running',
                 turn,
                 currentPlayer: currentPlayerColor,
-                lastUpdate: game.updatedAt,
+                lastUpdate: Math.max(
+                    lastMoveTime,
+                    lastRollTime,
+                    gameUpdateTime,
+                ),
                 dices: [],
                 rolled: false,
                 board: [],

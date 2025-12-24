@@ -7,9 +7,7 @@
 <ul>
     {#each data || [] as game}
         <li>
-            <a href={`${game.gameId}`}>
-                <Entry {...game} {user} />
-            </a>
+            <Entry {...game} {user} />
         </li>
     {:else}
         <li class="empty">{emptyText}</li>

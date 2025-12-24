@@ -21,8 +21,10 @@
     $effect(() => {
         if (data) {
             if (data.lastUpdate !== lastUpdate) {
-                game.gameId = data.gameId;
-                game.userColor = data.userColor;
+                if (data.gameId !== game.gameId) {
+                    game.gameId = data.gameId;
+                    game.userColor = data.userColor;
+                }
                 game.updateState(data.initialGameState);
                 lastUpdate = data.lastUpdate;
             }

@@ -5,11 +5,21 @@
         differenceInDays,
         differenceInWeeks,
     } from 'date-fns';
+    import Bell from '$lib/assets/bell.svg.svelte';
+    import BellCrossed from '$lib/assets/bell-crossed.svg.svelte';
 
     const {user, gameId, players, status, turn, lastUpdate} = $props();
 
     const player = $derived(players.find((p) => p.id === user.id));
     const opponent = $derived(players.find((p) => p.id !== user.id));
+
+    let notificationsEnabled = $state(false);
+
+    function toggleNotifications(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        notificationsEnabled = !notificationsEnabled;
+    }
 
     const formattedLastUpdate = $derived.by(() => {
         if (!lastUpdate) {
@@ -17,7 +27,7 @@
         }
 
         const now = new Date();
-        const lastUpdateParsed = Date.parse(lastUpdate);
+        const lastUpdateParsed = lastUpdate;
         const minDiff = differenceInMinutes(now, lastUpdateParsed);
         if (minDiff < 1) {
             return 'gerade eben';
@@ -38,32 +48,75 @@
     });
 </script>
 
-<div class="container" data-id={gameId}>
-    <!-- <div class="hover">zum Spiel</div>
-    -->
-    <!-- triangle to the left -->
-    <!-- <svg class="hover" viewBox="0 0 3 1" preserveAspectRatio="xMinYMid"> -->
-    <svg class="hover" viewBox="0 0 100 100">
-        <polygon points="0,0 100,50 0,100" />
-    </svg>
-    <div class="content">
-        <div class="opponent">vs. {opponent.username}</div>
-        <div class="state">Zug {turn} · im Ziel: 0 w, 0 b</div>
-        <div class="last-update">{formattedLastUpdate}</div>
-        <div class="checker {player.color}"></div>
-    </div>
+<div class="wrapper">
+    <a href={gameId} class="container" data-id={gameId}>
+        <svg class="hover" viewBox="0 0 100 100">
+            <polygon points="0,0 100,50 0,100" />
+        </svg>
+        <div class="content">
+            <div class="opponent">vs. {opponent.username}</div>
+            <div class="state">Zug {turn} · im Ziel: 0 w, 0 b</div>
+            <div class="last-update">{formattedLastUpdate}</div>
+            <div class="checker {player.color}"></div>
+        </div>
+    </a>
+    <button
+        class="notification-toggle"
+        class:active={notificationsEnabled}
+        onclick={toggleNotifications}
+        aria-label="Toggle notifications"
+    >
+        {#if notificationsEnabled}
+            <Bell />
+        {:else}
+            <BellCrossed />
+        {/if}
+    </button>
 </div>
 
 <style lang="scss">
+    .wrapper {
+        display: flex;
+        gap: 5px;
+    }
+
     .container {
         position: relative;
         display: flex;
+        flex: 1;
         border-left: $middlegray 1px solid;
-        background-color: $background-primary;
         height: 5rem;
+        text-decoration: none;
+        background-color: $background-primary;
 
         &:hover {
             border-left: $darkgray 2px solid;
+        }
+    }
+
+    .notification-toggle {
+        background-color: $background-primary;
+        border: none;
+        cursor: pointer;
+        color: $middlegray;
+        padding: 0 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: 1 color 0.2s;
+        // border-left: 5px solid white;
+
+        &:hover {
+            color: $text-primary;
+        }
+
+        &.active {
+            color: $text-primary;
+        }
+
+        :global(svg) {
+            width: 1.25rem;
+            height: 1.25rem;
         }
     }
 
@@ -89,8 +142,8 @@
             'opponent checker'
             'state last-update';
         grid-template-columns: 1fr 1fr;
-        gap: 0.5rem;
-        padding: 0.5rem 0.75rem;
+        gap: 0.25rem;
+        padding: 0.75rem 0.75rem 0.5rem 0.75rem;
 
         .opponent {
             color: $text-primary;
