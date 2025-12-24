@@ -3,8 +3,7 @@
     differenceInMinutes,
     differenceInHours,
     differenceInDays,
-    differenceInWeeks,
-    differenceInMonths
+    differenceInWeeks
   } from "date-fns";
 
   const { user, gameId, players, status, turn, lastUpdate } = $props();
