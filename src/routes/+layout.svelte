@@ -10,7 +10,7 @@
     let showNewGameMenu = $state(false);
 </script>
 
-{#if page.route.id !== '/login'}
+{#if page.route.id !== '/login' && page.route.id !== '/register'}
     <header>
         <div class="left">{page?.data?.user?.username}</div>
         <div class="right">

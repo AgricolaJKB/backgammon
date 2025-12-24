@@ -8,6 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "db:push": "drizzle-kit push",
+    "db:setup": "./scripts/setup_db.sh",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio"
   },

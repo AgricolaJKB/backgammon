@@ -29,7 +29,11 @@ const handleAuth = async ({ event, resolve }) => {
     }
 
     const payload = auth.decodeJWT(token);
-    const user = { id: payload.userId, username: payload.username };
+    const user = {
+      id: payload.userId,
+      username: payload.username,
+      emoji: payload.emoji
+    };
 
     event.locals.user = user;
     event.locals.session = token;

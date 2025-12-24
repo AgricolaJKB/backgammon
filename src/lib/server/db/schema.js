@@ -5,8 +5,8 @@ export const user = sqliteTable("users", {
   id: text("id").primaryKey(),
   username: text("username").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
-  email: text("email").unique(),
-  emoji: text("emoji")
+  email: text("email").unique().notNull(),
+  emoji: text("emoji").notNull()
 });
 
 export const games = sqliteTable("games", {
