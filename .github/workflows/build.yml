@@ -21,7 +21,9 @@ jobs:
       run: npm ci
 
     - name: Setup Dummy DB
-      run: npm run db:setup
+      run: |
+        mkdir -p db
+        touch db/database.db
       env:
         DATABASE_URL: "file:./db/database.db"
 
