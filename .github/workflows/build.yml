@@ -101,5 +101,5 @@ jobs:
           # Optional: Run migrations if you have them set up
           # npm run db:migrate
           
-          systemctl --user restart backgammon
+          # systemctl --user restart backgammon
         EOF
