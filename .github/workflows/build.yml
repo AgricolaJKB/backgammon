@@ -26,7 +26,9 @@ jobs:
         DATABASE_URL: "file:./db/database.db"
 
     - name: Initialize Dummy DB
-      run: npx drizzle-kit push
+      run: |
+        npx drizzle-kit generate
+        npx drizzle-kit migrate
       env:
         DATABASE_URL: "file:./db/database.db"
 
