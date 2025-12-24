@@ -1,72 +1,19 @@
 <script>
     import House from '$lib/client/assets/house-solid.svg.svelte';
     import Logout from '$lib/client/assets/right-to-bracket.svg.svelte';
-    import Plus from '$lib/client/assets/plus.svg.svelte';
-    import Bell from '$lib/client/assets/bell.svg.svelte';
     import {page} from '$app/state';
     import {enhance} from '$app/forms';
 
     let {children} = $props();
-    let showNewGameMenu = $state(false);
 </script>
 
 {#if page.route.id !== '/login' && page.route.id !== '/register'}
     <header>
-        <div class="left">{page?.data?.user?.username}</div>
+        <div class="left">
+            <span class="emoji">{page?.data?.user?.emoji}</span>
+            {page?.data?.user?.username}
+        </div>
         <div class="right">
-            <div class="action-item">
-                <button class="icon-btn" title="Nachrichten">
-                    <Bell />
-                </button>
-            </div>
-
-            {#if page.route.id === '/'}
-                <div class="action-item">
-                    <button
-                        class="icon-btn"
-                        onclick={() => (showNewGameMenu = !showNewGameMenu)}
-                        title="Neues Spiel"
-                    >
-                        <Plus />
-                    </button>
-                    {#if showNewGameMenu}
-                        <div class="dropdown">
-                            <h3>Neues Spiel gegen:</h3>
-                            {#if page.data.opponents?.length > 0}
-                                {#each page.data.opponents as opponent}
-                                    <form
-                                        method="POST"
-                                        action="/?/createGame"
-                                        use:enhance
-                                    >
-                                        <input
-                                            type="hidden"
-                                            name="opponentId"
-                                            value={opponent.id}
-                                        />
-                                        <button
-                                            type="submit"
-                                            class="dropdown-item"
-                                        >
-                                            {opponent.username}
-                                        </button>
-                                    </form>
-                                {/each}
-                            {:else}
-                                <div class="dropdown-item empty">
-                                    Keine Gegner gefunden
-                                </div>
-                            {/if}
-                        </div>
-                        <!-- Backdrop to close -->
-                        <div
-                            class="backdrop"
-                            onclick={() => (showNewGameMenu = false)}
-                        ></div>
-                    {/if}
-                </div>
-            {/if}
-
             {#if page.route.id === '/'}
                 <div class="by action-item">
                     <form method="post" action="/?/logout" use:enhance>
@@ -97,6 +44,13 @@
 
         .left {
             @include font-l;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+
+            .emoji {
+                font-size: 1.5rem;
+            }
         }
 
         .right {
@@ -139,63 +93,6 @@
             &:hover {
                 opacity: 0.7;
             }
-        }
-
-        .dropdown {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            margin-top: 0.5rem;
-            background: white;
-            border: 1px solid $middlegray;
-            border-radius: 4px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            width: 200px;
-            z-index: 100;
-            padding: 0.5rem 0;
-
-            h3 {
-                margin: 0;
-                padding: 0.5rem 1rem;
-                font-size: 0.9rem;
-                border-bottom: 1px solid $lightgray;
-                color: $text-secondary;
-            }
-
-            .dropdown-item {
-                display: block;
-                width: 100%;
-                text-align: left;
-                padding: 0.5rem 1rem;
-                background: none;
-                border: none;
-                cursor: pointer;
-                font-size: 1rem;
-                color: $text-primary;
-
-                &:hover {
-                    background-color: $lightgray;
-                }
-
-                &.empty {
-                    color: $text-secondary;
-                    font-style: italic;
-                    cursor: default;
-                    &:hover {
-                        background: none;
-                    }
-                }
-            }
-        }
-
-        .backdrop {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: 99;
-            cursor: default;
         }
     }
 
@@ -245,12 +142,9 @@
         }
 
         #app {
-            // max-width: 1500px;
             margin: 0 auto;
             width: 100%;
             height: 100%;
-            /* padding: 2rem; */
-            /* text-align: center; */
         }
 
         button {

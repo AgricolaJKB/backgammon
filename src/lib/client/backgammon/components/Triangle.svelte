@@ -23,7 +23,6 @@
     .container {
         width: 100%;
         height: 100%;
-        // background-color: #c3c3c3;
     }
     svg {
         width: 100%;

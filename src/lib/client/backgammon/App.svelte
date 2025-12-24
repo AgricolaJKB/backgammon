@@ -181,7 +181,6 @@
     .main-area {
         width: calc(75% - 6vw);
         height: 100%;
-        float: left;
 
         @media (max-width: 768px) {
             width: 70%;
@@ -192,7 +191,6 @@
         width: 25%;
         height: 100%;
         max-height: 100%;
-        float: right;
         align-self: flex-start;
 
         display: grid;
