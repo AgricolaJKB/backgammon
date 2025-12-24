@@ -54,6 +54,7 @@ jobs:
           package-lock.json
           drizzle.config.js
           src/lib/server/db/schema.js
+          scripts
 
   deploy:
     needs: build
@@ -86,7 +87,7 @@ jobs:
         ssh ${{ secrets.UBERSPACE_USER }}@${{ secrets.UBERSPACE_HOST }} "mkdir -p ~/backgammon/src/lib/server/db"
         
         # Sync files
-        rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./build ./package.json ./package-lock.json ./drizzle.config.js ${{ secrets.UBERSPACE_USER }}@${{ secrets.UBERSPACE_HOST }}:~/backgammon/
+        rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./build ./package.json ./package-lock.json ./drizzle.config.js ./scripts ${{ secrets.UBERSPACE_USER }}@${{ secrets.UBERSPACE_HOST }}:~/backgammon/
         
         # Sync schema for migrations/drizzle
         rsync -avz -e "ssh -o StrictHostKeyChecking=no" ./src/lib/server/db/schema.js ${{ secrets.UBERSPACE_USER }}@${{ secrets.UBERSPACE_HOST }}:~/backgammon/src/lib/server/db/
