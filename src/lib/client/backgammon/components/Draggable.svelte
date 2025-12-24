@@ -23,6 +23,7 @@
         children,
         send,
         receive,
+        dragOrigin = null,
     } = $props();
 
     let el = $state();
@@ -32,12 +33,26 @@
         return {duration: 0};
     }
 
+    function flyFrom(node, {x, y, duration = 400}) {
+        const rect = node.getBoundingClientRect();
+        const dx = x - (rect.left + rect.width / 2);
+        const dy = y - (rect.top + rect.height / 2);
+
+        return {
+            duration,
+            css: (t, u) => `transform: translate(${u * dx}px, ${u * dy}px)`,
+        };
+    }
+
     function inFn(node, params) {
+        if (dragOrigin)
+            return flyFrom(node, {x: dragOrigin.x, y: dragOrigin.y});
         if (receive) return receive(node, params);
         return noop();
     }
 
     function outFn(node, params) {
+        if (isDragging) return noop();
         if (send) return send(node, params);
         return noop();
     }
@@ -65,12 +80,11 @@
             startY,
             rect,
             (center) => {
-                isDragging = false;
-                // Pass a reset function that does nothing, as we don't move DOM nodes anymore
-                // But we pass the center coordinates for drop detection
                 onDragEnd({
                     coordinates: center,
-                    reset: () => {},
+                    reset: () => {
+                        isDragging = false;
+                    },
                 });
             },
             maxDrag,

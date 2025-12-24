@@ -12,7 +12,7 @@
     import DragLayer from './components/DragLayer.svelte';
     let {data} = $props();
 
-    let game = new Game(data?.userColor, data?.gameId);
+    let game = new Game(data?.userColor, data?.gameId, data?.initialGameState);
     setContext('game', game);
 
     $effect(() => {
@@ -61,6 +61,8 @@
 
     let _checkerPositions = $derived(forcedCheckerPositions || game.board);
 
+    let recentDrops = $state({});
+
     const handleCheckerDrop = ({checkerId, fromPos, coordinates, reset}) => {
         const elements = document.elementsFromPoint(
             coordinates.x,
@@ -78,6 +80,8 @@
         const success = game.attemptMove(checkerId, fromPos, toPos);
         if (!success) {
             reset();
+        } else {
+            recentDrops[checkerId] = coordinates;
         }
     };
 </script>
@@ -97,6 +101,7 @@
                                 {receive}
                                 position={`hit-area-${color}`}
                                 onMove={handleCheckerDrop}
+                                dragOrigin={recentDrops[checker.id]}
                             />
                         {/each}
                     </Box>
@@ -115,6 +120,7 @@
                                 {receive}
                                 position={`out-area-${color}`}
                                 onMove={handleCheckerDrop}
+                                dragOrigin={recentDrops[checker.id]}
                             />
                         {/each}
                     </Box>
@@ -151,6 +157,7 @@
                                         {receive}
                                         position={index}
                                         onMove={handleCheckerDrop}
+                                        dragOrigin={recentDrops[checker.id]}
                                     />
                                 {/each}
                             </div>
@@ -165,14 +172,14 @@
 
 <style lang="scss">
     .backgammon {
-        height: calc(100dvh - 7rem);
+        height: calc(100dvh - 6rem);
         max-height: 100%;
         display: flex;
         align-items: center;
         justify-content: space-evenly;
     }
     .main-area {
-        width: 65%;
+        width: calc(75% - 6vw);
         height: 100%;
         float: left;
 
@@ -223,8 +230,9 @@
     }
     .board {
         position: relative;
-        width: 90vw;
-        height: 90dvh;
+        width: 100%;
+        // height: 90dvh;
+        height: 100%;
         max-width: 100%;
         max-height: 100%;
         background-color: darkgrey;

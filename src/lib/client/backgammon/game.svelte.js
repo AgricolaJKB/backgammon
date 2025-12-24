@@ -6,15 +6,15 @@ const checkersById = init.reduce((acc, curr) => {
 }, {});
 
 export class Game {
+    gameId = $state(null);
     gameState = $state(null);
     localMoves = $state([]);
     userColor = $state(null);
-    gameId = $state(null);
-    debug = $state(false);
 
-    constructor(userColor, gameId) {
+    constructor(userColor, gameId, initialGamestate) {
         this.userColor = userColor;
         this.gameId = gameId;
+        this.gameState = initialGamestate || null;
     }
 
     updateState(gameState) {
@@ -258,6 +258,23 @@ export class Game {
             usedDice
         });
         return true;
+    }
+
+    confirmTurn() {
+        if (!this.gameState) return;
+
+        const turn = this.currentTurn;
+        const newMoves = this.localMoves.map((move) => ({
+            checkerId: move.checkerId,
+            toPos: move.toPos,
+            turnNumber: turn,
+        }));
+
+        this.gameState = {
+            ...this.gameState,
+            moves: [...(this.gameState.moves || []), ...newMoves],
+        };
+        this.localMoves = [];
     }
 }
 

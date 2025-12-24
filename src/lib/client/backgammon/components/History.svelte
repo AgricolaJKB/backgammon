@@ -11,17 +11,15 @@
         forcedDices = $bindable(),
     } = $props();
 
-    let infoByTurn = $state([]);
-
-    $effect(() => {
-        infoByTurn = Array.from({length: game.currentTurn - 1}, (_, i) => {
+    let infoByTurn = $derived(
+        Array.from({length: Math.max(0, game.currentTurn - 1)}, (_, i) => {
             return {
                 moves: game.serverMoves.filter((m) => m.turnNumber === i + 1),
                 throw: game.diceRolls.find((t) => t.turnNumber === i + 1),
                 playerColor: i % 2 === 0 ? 'white' : 'black',
             };
-        });
-    });
+        }),
+    );
 
     let lastViewedTurn;
 
@@ -45,7 +43,7 @@
 </script>
 
 <div class="container">
-    {#each infoByTurn as info, i}
+    {#each infoByTurn as info, i (i)}
         <div
             class="info {info.playerColor}"
             role="button"

@@ -26,6 +26,7 @@
         onMove = () => {},
         send,
         receive,
+        dragOrigin = null,
     } = $props();
 
     $effect(() => {
@@ -42,7 +43,14 @@
     };
 </script>
 
-<Draggable {id} {send} {receive} deactivated={!draggable} {onDragEnd}>
+<Draggable
+    {id}
+    {send}
+    {receive}
+    deactivated={!draggable}
+    {onDragEnd}
+    {dragOrigin}
+>
     <div
         class="checker {color}"
         style="background-color: {color}; border: {hasBeenMoved

@@ -92,7 +92,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 1rem;
+        padding: 1rem 2rem;
         margin-bottom: 1rem;
 
         .left {
@@ -245,7 +245,7 @@
         }
 
         #app {
-            max-width: 1500px;
+            // max-width: 1500px;
             margin: 0 auto;
             width: 100%;
             height: 100%;

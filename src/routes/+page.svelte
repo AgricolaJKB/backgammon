@@ -9,12 +9,18 @@
 </script>
 
 <div class="container">
-    <!-- <h1>Hallo, {data?.user?.username}!</h1>
-  <p>Deine ID ist {data?.user?.id}.</p> -->
     <p class="section">Du bist dran:</p>
-    <List user={data?.user} data={data?.myTurnGames} />
+    <List
+        user={data?.user}
+        data={data?.myTurnGames}
+        emptyText="Du bist gerade bei keinem Spiel am Zug."
+    />
     <p class="section">Die anderen sind dran:</p>
-    <List user={data?.user} data={data?.otherTurnGames} />
+    <List
+        user={data?.user}
+        data={data?.otherTurnGames}
+        emptyText="Keine Spiele, bei denen andere am Zug sind."
+    />
 </div>
 
 <style lang="scss">

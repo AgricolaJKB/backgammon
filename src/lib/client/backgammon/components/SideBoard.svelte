@@ -21,19 +21,14 @@
     let isForced = $derived(forcedPlayerColor && forcedTurn);
 
     let dices = $state([0, 0]);
-    $inspect(
-        'current',
-        game.gameState,
-        game.currentPlayerColor,
-        game.currentTurn,
-    );
 
     $effect(() => {
         dices = forcedDices || game.currentRoll;
     });
 
-    const roll = async () => {
+    const roll = async ({reset}) => {
         dices = await rollDices(game.gameId);
+        reset();
     };
 
     const endTurn = async () => {
@@ -46,7 +41,7 @@
             }),
         );
         if (okay === 'ok') {
-            game.setLocalMoves([]);
+            game.confirmTurn();
         }
     };
     $inspect(game.userColor, playerToDisplay);
